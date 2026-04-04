@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.apple.chain</groupId>
+        <artifactId>apple-chain-platform</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>apple-web</artifactId>
+    <packaging>jar</packaging>
+    <name>apple-web</name>
+    <description>Entry point for apple-chain-platform</description>
+
+    <dependencies>
+        <!-- All feature modules -->
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-user</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-planting</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-trace</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-trade</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-bigdata</artifactId>
+        </dependency>
+
+        <!-- Knife4j API docs -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- MinIO -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+        </dependency>
+
+        <!-- Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Flyway for DB migrations -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+
+        <!-- H2 in-memory DB for tests -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

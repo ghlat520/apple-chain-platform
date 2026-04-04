@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.apple.chain.bigdata.mapper.DashboardMapper">
+
+    <!-- KPI: Total active orchards -->
+    <select id="countOrchards" resultType="long">
+        SELECT COUNT(*) FROM pt_orchard WHERE deleted = 0
+    </select>
+
+    <!-- KPI: Total orchard area in mu -->
+    <select id="sumOrchardArea" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(area), 0) FROM pt_orchard WHERE deleted = 0
+    </select>
+
+    <!-- KPI: Total harvest weight in current year -->
+    <select id="sumHarvestCurrentYear" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_weight), 0)
+        FROM pt_harvest_batch
+        WHERE deleted = 0
+          AND status IN ('CONFIRMED', 'IN_STORAGE')
+          AND YEAR(harvest_date) = YEAR(CURDATE())
+    </select>
+
+    <!-- KPI: Completed trade orders count -->
+    <select id="countCompletedTrades" resultType="long">
+        SELECT COUNT(*) FROM td_trade_order WHERE deleted = 0 AND order_status = 'COMPLETED'
+    </select>
+
+    <!-- KPI: Total completed trade amount -->
+    <select id="sumTradeAmount" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_amount), 0)
+        FROM td_trade_order
+        WHERE deleted = 0 AND order_status = 'COMPLETED'
+    </select>
+
+    <!-- KPI: Active farmers count (users with roleCode FARMER and status=1) -->
+    <select id="countActiveFarmers" resultType="long">
+        SELECT COUNT(*) FROM uc_user
+        WHERE deleted = 0 AND role_code = 'FARMER' AND status = 1
+    </select>
+
+    <!-- KPI: Published supply count -->
+    <select id="countActiveSupplies" resultType="long">
+        SELECT COUNT(*) FROM td_supply_info
+        WHERE deleted = 0 AND status = 'PUBLISHED'
+    </select>
+
+    <!-- KPI: Pending orders (DRAFT or CONFIRMED) -->
+    <select id="countPendingOrders" resultType="long">
+        SELECT COUNT(*) FROM td_trade_order
+        WHERE deleted = 0 AND order_status IN ('DRAFT', 'CONFIRMED')
+    </select>
+
+    <!-- Harvest trend: last 6 months grouped by year-month -->
+    <!-- Use CONCAT(YEAR,LPAD(MONTH)) instead of DATE_FORMAT for H2/MySQL compatibility -->
+    <!-- Alias 'ym' used instead of 'month' to avoid H2 reserved keyword conflict -->
+    <select id="harvestTrendLast6Months" resultType="map">
+        SELECT
+            CONCAT(YEAR(harvest_date), '-', LPAD(MONTH(harvest_date), 2, '0')) AS ym,
+            COALESCE(SUM(total_weight), 0) AS totalWeight
+        FROM pt_harvest_batch
+        WHERE deleted = 0
+          AND status IN ('CONFIRMED', 'IN_STORAGE')
+          AND harvest_date >= DATEADD('MONTH', -5, CURRENT_DATE)
+        GROUP BY CONCAT(YEAR(harvest_date), '-', LPAD(MONTH(harvest_date), 2, '0'))
+        ORDER BY ym ASC
+    </select>
+
+    <!-- Trade trend: last 6 months grouped by year-month -->
+    <!-- Use CONCAT(YEAR,LPAD(MONTH)) instead of DATE_FORMAT for H2/MySQL compatibility -->
+    <!-- Alias 'ym' used instead of 'month' to avoid H2 reserved keyword conflict -->
+    <select id="tradeTrendLast6Months" resultType="map">
+        SELECT
+            CONCAT(YEAR(trade_date), '-', LPAD(MONTH(trade_date), 2, '0')) AS ym,
+            COALESCE(SUM(total_amount), 0) AS totalAmount,
+            COUNT(*) AS orderCount
+        FROM td_trade_order
+        WHERE deleted = 0
+          AND order_status = 'COMPLETED'
+          AND trade_date >= DATEADD('MONTH', -5, CURRENT_DATE)
+        GROUP BY CONCAT(YEAR(trade_date), '-', LPAD(MONTH(trade_date), 2, '0'))
+        ORDER BY ym ASC
+    </select>
+
+    <!-- Variety distribution: apple variety -> sum of harvest weight -->
+    <select id="varietyDistribution" resultType="map">
+        SELECT
+            o.variety AS variety,
+            COALESCE(SUM(h.total_weight), 0) AS totalWeight,
+            COUNT(h.id) AS batchCount
+        FROM pt_orchard o
+        LEFT JOIN pt_harvest_batch h ON h.orchard_id = o.id AND h.deleted = 0
+            AND h.status IN ('CONFIRMED', 'IN_STORAGE')
+        WHERE o.deleted = 0
+          AND o.variety IS NOT NULL
+        GROUP BY o.variety
+        ORDER BY totalWeight DESC
+    </select>
+
+    <!-- Top 5 orchards by total harvest weight this year -->
+    <select id="topOrchardsByHarvest" resultType="map">
+        SELECT
+            o.id AS orchardId,
+            o.orchard_name AS orchardName,
+            o.orchard_no AS orchardNo,
+            o.variety AS variety,
+            COALESCE(SUM(h.total_weight), 0) AS totalWeight
+        FROM pt_orchard o
+        LEFT JOIN pt_harvest_batch h ON h.orchard_id = o.id AND h.deleted = 0
+            AND h.status IN ('CONFIRMED', 'IN_STORAGE')
+            AND YEAR(h.harvest_date) = YEAR(CURDATE())
+        WHERE o.deleted = 0
+        GROUP BY o.id, o.orchard_name, o.orchard_no, o.variety
+        ORDER BY totalWeight DESC
+        LIMIT 5
+    </select>
+
+    <!-- Supply vs demand by variety -->
+    <select id="supplyDemandByVariety" resultType="map">
+        SELECT
+            v.variety,
+            COALESCE(s.supplyQty, 0) AS supplyQty,
+            COALESCE(n.demandQty, 0) AS demandQty
+        FROM (
+            SELECT DISTINCT variety FROM td_supply_info WHERE deleted = 0 AND variety IS NOT NULL
+            UNION
+            SELECT DISTINCT variety FROM td_purchase_need WHERE deleted = 0 AND variety IS NOT NULL
+        ) v
+        LEFT JOIN (
+            SELECT variety, SUM(quantity) AS supplyQty
+            FROM td_supply_info
+            WHERE deleted = 0 AND status IN ('PUBLISHED', 'MATCHED')
+            GROUP BY variety
+        ) s ON s.variety = v.variety
+        LEFT JOIN (
+            SELECT variety, SUM(quantity) AS demandQty
+            FROM td_purchase_need
+            WHERE deleted = 0 AND status IN ('PUBLISHED', 'MATCHED')
+            GROUP BY variety
+        ) n ON n.variety = v.variety
+        ORDER BY supplyQty DESC
+    </select>
+
+    <!-- Trace chain status distribution -->
+    <select id="traceStatusDistribution" resultType="map">
+        SELECT
+            current_status AS status,
+            COUNT(*) AS count
+        FROM tr_trace_chain
+        WHERE deleted = 0
+        GROUP BY current_status
+        ORDER BY count DESC
+    </select>
+
+</mapper>

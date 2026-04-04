@@ -1,0 +1,27 @@
+# Build
+target/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Frontend
+apple-web-ui/node_modules/
+apple-web-ui/dist/
+frontend/node_modules/
+frontend/dist/
