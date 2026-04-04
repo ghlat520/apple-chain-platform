@@ -13,5 +13,12 @@ export const cultivationApi = {
   getOperations: (params) => request.get('/cultivation/operations', { params }),
   createOperation: (data) => request.post('/cultivation/operations', data),
   updateOperation: (id, data) => request.put(`/cultivation/operations/${id}`, data),
-  deleteOperation: (id) => request.delete(`/cultivation/operations/${id}`)
+  deleteOperation: (id) => request.delete(`/cultivation/operations/${id}`),
+
+  // 生长记录
+  getGrowthRecords: (params) => request.get('/planting/record/list', { params }),
+  getGrowthRecord: (id) => request.get(`/planting/record/${id}`),
+  createGrowthRecord: (data) => request.post('/planting/record', data),
+  updateGrowthRecord: (id, data) => request.put(`/planting/record/${id}`, data),
+  deleteGrowthRecord: (id) => request.delete(`/planting/record/${id}`)
 }

@@ -85,6 +85,29 @@
         </van-cell-group>
       </div>
 
+      <!-- Agricultural Input Usage -->
+      <div class="result-card">
+        <h3 class="section-title">农资使用记录</h3>
+        <van-cell-group v-if="usageRecords.length > 0" inset>
+          <van-cell
+            v-for="(record, index) in usageRecords"
+            :key="index"
+            :title="record.productName || '-'"
+            :label="`${record.usageDate || '-'} | 操作人：${record.operator || '-'}`"
+          >
+            <template #value>
+              <div class="usage-value">
+                <van-tag :type="methodTagType(record.method)" size="medium">{{ record.method || '-' }}</van-tag>
+                <span class="usage-quantity">{{ record.quantity ?? '-' }}{{ record.unit || '' }}</span>
+              </div>
+            </template>
+          </van-cell>
+        </van-cell-group>
+        <div v-else class="usage-empty">
+          <span>暂无农资使用记录</span>
+        </div>
+      </div>
+
       <div class="re-query">
         <van-button block plain type="default" @click="reset">重新查询</van-button>
       </div>
@@ -96,6 +119,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { traceApi } from '@/api/trace.js'
+import { inputApi } from '@/api/input.js'
 import { showToast } from 'vant'
 
 const route = useRoute()
@@ -103,6 +127,7 @@ const traceCode = ref('')
 const loading = ref(false)
 const hasQueried = ref(false)
 const traceResult = ref(null)
+const usageRecords = ref([])
 
 async function handleQuery() {
   if (!traceCode.value.trim()) {
@@ -112,9 +137,33 @@ async function handleQuery() {
   loading.value = true
   hasQueried.value = true
   traceResult.value = null
+  usageRecords.value = []
   try {
-    const res = await traceApi.getChain(traceCode.value.trim())
-    traceResult.value = res
+    const code = traceCode.value.trim()
+    const [res, usageRes] = await Promise.all([
+      traceApi.getChain(code),
+      inputApi.getUsageByTrace(code).catch(() => [])
+    ])
+    // Map API response { chain, nodes } to frontend display format
+    const c = res?.chain || res || {}
+    const nodes = res?.nodes || []
+    traceResult.value = {
+      productName: c.productType || '-',
+      variety: c.productType || '-',
+      orchardName: c.remark || '-',
+      batchCode: c.batchNo || '-',
+      packDate: '-',
+      weight: '-',
+      certificationNo: c.dataHash || '-',
+      chain: nodes.map(n => ({
+        stage: n.summary || n.nodeType || '-',
+        description: n.detail ? (typeof n.detail === 'string' ? (() => { try { const d = JSON.parse(n.detail); return Object.entries(d).map(([k,v]) => `${k}: ${v}`).join(', ') } catch { return n.detail } })() : n.detail) : '-',
+        time: n.nodeTime || '-',
+        operator: n.operatorName || '-',
+        location: n.location || '-'
+      }))
+    }
+    usageRecords.value = Array.isArray(usageRes) ? usageRes : (usageRes?.data || usageRes?.records || [])
   } catch (e) {
     traceResult.value = null
   } finally {
@@ -122,10 +171,16 @@ async function handleQuery() {
   }
 }
 
+const methodTagType = (method) => {
+  const map = { '撒施': 'primary', '喷洒': 'success', '滴灌': 'warning', '穴施': 'danger' }
+  return map[method] || 'default'
+}
+
 function reset() {
   traceCode.value = ''
   hasQueried.value = false
   traceResult.value = null
+  usageRecords.value = []
 }
 
 onMounted(() => {
@@ -236,6 +291,26 @@ onMounted(() => {
   font-size: 12px;
   color: #969799;
   margin-top: 2px;
+}
+
+.usage-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.usage-quantity {
+  font-size: 13px;
+  color: #323233;
+  font-weight: 500;
+}
+
+.usage-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #c8c9cc;
 }
 
 .re-query {

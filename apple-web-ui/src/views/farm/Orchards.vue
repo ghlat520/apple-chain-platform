@@ -12,8 +12,8 @@
     <div class="filter-bar">
       <van-tabs v-model:active="query.status" @change="handleSearch">
         <van-tab title="全部" name="" />
-        <van-tab title="正常" name="active" />
-        <van-tab title="休耕" name="inactive" />
+        <van-tab title="正常" name="ACTIVE" />
+        <van-tab title="休耕" name="INACTIVE" />
       </van-tabs>
     </div>
 
@@ -33,7 +33,7 @@
       >
         <van-cell-group inset style="margin-bottom:8px" v-for="item in list" :key="item.id">
           <van-cell
-            :title="item.name"
+            :title="item.orchardName || item.name"
             :label="`${item.location || '位置未填写'} · ${item.area || 0} 亩`"
             is-link
             @click="openDetailDrawer(item)"
@@ -99,8 +99,8 @@
           <van-field label="状态">
             <template #input>
               <van-radio-group v-model="form.status" direction="horizontal">
-                <van-radio name="active">正常</van-radio>
-                <van-radio name="inactive">休耕</van-radio>
+                <van-radio name="ACTIVE">正常</van-radio>
+                <van-radio name="INACTIVE">休耕</van-radio>
               </van-radio-group>
             </template>
           </van-field>
@@ -125,7 +125,7 @@
         <van-icon name="cross" @click="showDetail = false" />
       </div>
       <van-cell-group inset v-if="currentItem">
-        <van-cell title="果园名称" :value="currentItem.name" />
+        <van-cell title="果园名称" :value="currentItem.orchardName || currentItem.name" />
         <van-cell title="地理位置" :value="currentItem.location || '-'" />
         <van-cell title="面积（亩）" :value="currentItem.area ?? '-'" />
         <van-cell title="负责人" :value="currentItem.owner || '-'" />
@@ -162,20 +162,22 @@ const editId = ref(null)
 const currentItem = ref(null)
 
 const query = reactive({ keyword: '', status: '', page: 1, pageSize: 10 })
-const form = reactive({ name: '', location: '', area: '', owner: '', phone: '', remark: '', status: 'active' })
+const form = reactive({ name: '', location: '', area: '', owner: '', phone: '', remark: '', status: 'ACTIVE' })
 
 function statusTagType(status) {
-  const map = { active: 'primary', inactive: 'default' }
-  return map[status] || 'default'
+  const s = (status || '').toUpperCase()
+  const map = { ACTIVE: 'primary', INACTIVE: 'default' }
+  return map[s] || 'default'
 }
 
 function statusLabel(status) {
-  const map = { active: '正常', inactive: '休耕' }
-  return map[status] || status || '-'
+  const s = (status || '').toUpperCase()
+  const map = { ACTIVE: '正常', INACTIVE: '休耕' }
+  return map[s] || status || '-'
 }
 
 function resetForm() {
-  Object.assign(form, { name: '', location: '', area: '', owner: '', phone: '', remark: '', status: 'active' })
+  Object.assign(form, { name: '', location: '', area: '', owner: '', phone: '', remark: '', status: 'ACTIVE' })
 }
 
 async function loadList() {
@@ -228,7 +230,7 @@ function openEditDrawer(item) {
     owner: item.owner || '',
     phone: item.phone || '',
     remark: item.remark || '',
-    status: item.status || 'active'
+    status: item.status || 'ACTIVE'
   })
   editId.value = item.id
   showDetail.value = false

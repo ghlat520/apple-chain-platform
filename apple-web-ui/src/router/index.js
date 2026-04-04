@@ -9,6 +9,12 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/scan/:code',
+    name: 'PublicScan',
+    component: () => import('@/views/trace/PublicScan.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/',
     component: () => import('@/components/AppLayout.vue'),
     meta: { requiresAuth: true },
@@ -34,6 +40,11 @@ const routes = [
         component: () => import('@/views/cultivation/Operations.vue')
       },
       {
+        path: 'cultivation/growth-records',
+        name: 'GrowthRecords',
+        component: () => import('@/views/cultivation/GrowthRecords.vue')
+      },
+      {
         path: 'trace/records',
         name: 'TraceRecords',
         component: () => import('@/views/trace/Records.vue')
@@ -44,6 +55,11 @@ const routes = [
         component: () => import('@/views/trace/Query.vue')
       },
       {
+        path: 'farm/farmers',
+        name: 'Farmers',
+        component: () => import('@/views/farm/Farmers.vue')
+      },
+      {
         path: 'trade/supply',
         name: 'Supply',
         component: () => import('@/views/trade/Supply.vue')
@@ -52,6 +68,95 @@ const routes = [
         path: 'trade/orders',
         name: 'Orders',
         component: () => import('@/views/trade/Orders.vue')
+      },
+      {
+        path: 'trade/purchase-needs',
+        name: 'PurchaseNeeds',
+        component: () => import('@/views/trade/PurchaseNeeds.vue')
+      },
+      // Input module
+      {
+        path: 'input/products',
+        name: 'AgriProducts',
+        component: () => import('@/views/input/Products.vue')
+      },
+      {
+        path: 'input/suppliers',
+        name: 'AgriSuppliers',
+        component: () => import('@/views/input/Suppliers.vue')
+      },
+      {
+        path: 'input/purchases',
+        name: 'AgriPurchases',
+        component: () => import('@/views/input/Purchases.vue')
+      },
+      {
+        path: 'input/inventory',
+        name: 'AgriInventory',
+        component: () => import('@/views/input/Inventory.vue')
+      },
+      {
+        path: 'input/usage',
+        name: 'AgriUsage',
+        component: () => import('@/views/input/Usage.vue')
+      },
+      // Warehouse module
+      {
+        path: 'warehouse/list',
+        name: 'Warehouses',
+        component: () => import('@/views/warehouse/Warehouses.vue')
+      },
+      {
+        path: 'warehouse/records',
+        name: 'WarehouseRecords',
+        component: () => import('@/views/warehouse/Records.vue')
+      },
+      {
+        path: 'warehouse/receipts',
+        name: 'WarehouseReceipts',
+        component: () => import('@/views/warehouse/Receipts.vue')
+      },
+      // Cold-chain module
+      {
+        path: 'coldchain/vehicles',
+        name: 'Vehicles',
+        component: () => import('@/views/coldchain/Vehicles.vue')
+      },
+      {
+        path: 'coldchain/tasks',
+        name: 'TransportTasks',
+        component: () => import('@/views/coldchain/Tasks.vue')
+      },
+      {
+        path: 'coldchain/temperatures',
+        name: 'Temperatures',
+        component: () => import('@/views/coldchain/Temperatures.vue')
+      },
+      {
+        path: 'coldchain/deliveries',
+        name: 'Deliveries',
+        component: () => import('@/views/coldchain/Deliveries.vue')
+      },
+      // Finance module
+      {
+        path: 'finance/credits',
+        name: 'Credits',
+        component: () => import('@/views/finance/Credits.vue')
+      },
+      {
+        path: 'finance/loans',
+        name: 'Loans',
+        component: () => import('@/views/finance/Loans.vue')
+      },
+      {
+        path: 'finance/pledges',
+        name: 'Pledges',
+        component: () => import('@/views/finance/Pledges.vue')
+      },
+      {
+        path: 'finance/risks',
+        name: 'Risks',
+        component: () => import('@/views/finance/Risks.vue')
       }
     ]
   }

@@ -116,7 +116,7 @@
     >
       <div class="drawer-header">
         <span>作业详情</span>
-        <van-icon name="cross" @click="showDetail = false" />
+        <van-icon name="cross" @click="closeDetail" />
       </div>
       <van-cell-group inset v-if="currentItem">
         <van-cell title="批次ID" :value="currentItem.batchId ?? '-'" />
@@ -127,6 +127,20 @@
         <van-cell title="备注" :value="currentItem.remark || '-'" />
         <van-cell title="创建时间" :value="currentItem.createTime || '-'" />
       </van-cell-group>
+      <van-divider content-position="left">关联农资使用</van-divider>
+      <van-cell-group inset v-if="usageRecords.length > 0">
+        <van-cell
+          v-for="(record, index) in usageRecords"
+          :key="index"
+          :title="record.productName || '-'"
+          :label="`用量: ${record.quantity ?? '-'} ${record.unit || ''} · 日期: ${record.usageDate || '-'}`"
+        >
+          <template #value>
+            <van-tag type="success" v-if="record.method">{{ record.method }}</van-tag>
+          </template>
+        </van-cell>
+      </van-cell-group>
+      <div v-else class="empty-usage-hint">暂无关联农资记录</div>
       <div class="drawer-actions">
         <van-button block type="primary" plain @click="openEditDrawer(currentItem)">编辑</van-button>
         <van-button block type="danger" plain @click="handleDelete(currentItem)" style="margin-top:8px">删除</van-button>
@@ -139,6 +153,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { cultivationApi } from '@/api/cultivation.js'
+import { inputApi } from '@/api/input.js'
 import { showToast, showConfirmDialog } from 'vant'
 
 const route = useRoute()
@@ -151,6 +166,7 @@ const showDetail = ref(false)
 const submitting = ref(false)
 const editId = ref(null)
 const currentItem = ref(null)
+const usageRecords = ref([])
 
 const operationTypeOptions = [
   { text: '全部', value: '' },
@@ -221,12 +237,27 @@ function openEditDrawer(item) {
   })
   editId.value = item.id
   showDetail.value = false
+  usageRecords.value = []
   showDrawer.value = true
 }
 
-function openDetailDrawer(item) {
+function closeDetail() {
+  showDetail.value = false
+  usageRecords.value = []
+}
+
+async function openDetailDrawer(item) {
   currentItem.value = item
+  usageRecords.value = []
   showDetail.value = true
+  if (item.batchId) {
+    try {
+      const res = await inputApi.getUsageByBatch(item.batchId)
+      usageRecords.value = res?.records || res || []
+    } catch (e) {
+      usageRecords.value = []
+    }
+  }
 }
 
 async function handleSubmit() {
@@ -252,6 +283,7 @@ async function handleDelete(item) {
     await cultivationApi.deleteOperation(item.id)
     showToast({ type: 'success', message: '删除成功' })
     showDetail.value = false
+    usageRecords.value = []
     loadList()
   } catch (e) {
     // user cancelled
@@ -268,4 +300,5 @@ onMounted(loadList)
 .drawer-header { display: flex; justify-content: space-between; align-items: center; padding: 16px; font-size: 16px; font-weight: 600; border-bottom: 1px solid #ebedf0; }
 .drawer-form { padding-bottom: 20px; }
 .drawer-actions { padding: 16px; }
+.empty-usage-hint { text-align: center; color: #969799; font-size: 13px; padding: 12px 0; }
 </style>

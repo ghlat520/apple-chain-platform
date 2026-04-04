@@ -19,6 +19,7 @@
     </div>
 
     <div class="action-bar">
+      <van-button type="primary" size="small" icon="search" @click="router.push('/trace/query')">溯源查询</van-button>
       <van-button type="default" size="small" icon="down" @click="handleExport">导出CSV</van-button>
     </div>
 
@@ -64,12 +65,29 @@
         <van-cell title="备注" :value="currentItem.remark || '-'" />
         <van-cell title="创建时间" :value="currentItem.createTime || '-'" />
       </van-cell-group>
+      <div v-if="currentItem" style="text-align:center;padding:16px">
+        <img
+          v-if="qrDataUrl"
+          :src="qrDataUrl"
+          alt="溯源二维码"
+          style="width:200px;height:200px;border:1px solid #ebedf0;border-radius:8px"
+        />
+        <van-loading v-else size="40px" style="margin:60px auto" />
+        <p style="margin-top:8px;font-size:12px;color:#969799">扫码查看溯源信息</p>
+      </div>
       <div class="drawer-actions">
         <van-button
           block type="primary" plain
           @click="goToQuery(currentItem)"
         >
           查看完整溯源链
+        </van-button>
+        <van-button
+          block type="success" plain
+          @click="downloadQrCode(currentItem)"
+          style="margin-top:8px"
+        >
+          下载二维码
         </van-button>
       </div>
     </van-popup>
@@ -82,6 +100,24 @@ import { useRouter } from 'vue-router'
 import { traceApi } from '@/api/trace.js'
 import { showToast } from 'vant'
 
+function downloadQrCode(item) {
+  const token = localStorage.getItem('token')
+  fetch(`/api/trace/qrcode/${item.traceCode}?size=400`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(r => r.blob())
+    .then(blob => {
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `溯源码_${item.traceCode}.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(a.href)
+    })
+    .catch(() => showToast('下载失败'))
+}
+
 const router = useRouter()
 const list = ref([])
 const loading = ref(false)
@@ -89,6 +125,7 @@ const finished = ref(false)
 const refreshing = ref(false)
 const showDetail = ref(false)
 const currentItem = ref(null)
+const qrDataUrl = ref(null)
 
 const query = reactive({ keyword: '', status: '', page: 1, pageSize: 10 })
 
@@ -140,7 +177,23 @@ function handleSearch() {
 
 function openDetailDrawer(item) {
   currentItem.value = item
+  qrDataUrl.value = null
   showDetail.value = true
+  loadQrCode(item.traceCode)
+}
+
+async function loadQrCode(traceCode) {
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`/api/trace/qrcode/${traceCode}?size=200`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    if (!res.ok) return
+    const blob = await res.blob()
+    qrDataUrl.value = URL.createObjectURL(blob)
+  } catch (e) {
+    // QR loading failed silently
+  }
 }
 
 function goToQuery(item) {

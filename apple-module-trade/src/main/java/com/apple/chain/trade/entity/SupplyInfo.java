@@ -41,4 +41,10 @@ public class SupplyInfo extends BaseEntity {
 
     /** DRAFT / PUBLISHED / MATCHED / CLOSED */
     private String status;
+
+    /** Cultivation batch code, e.g. CB202501010001 */
+    private String batchCode;
+
+    /** Trace code linking to tr_trace_chain, e.g. TC20260301001 */
+    private String traceCode;
 }

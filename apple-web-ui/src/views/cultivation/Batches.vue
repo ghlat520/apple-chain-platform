@@ -8,11 +8,13 @@
     />
 
     <div class="filter-bar">
-      <van-tabs v-model:active="query.status" @change="handleSearch">
+      <van-tabs v-model:active="query.status" @change="handleSearch" scrollable>
         <van-tab title="全部" name="" />
-        <van-tab title="种植中" name="growing" />
-        <van-tab title="采收中" name="harvesting" />
-        <van-tab title="已完成" name="completed" />
+        <van-tab title="定植" name="PLANTING" />
+        <van-tab title="生长中" name="GROWING" />
+        <van-tab title="待采收" name="READY_FOR_HARVEST" />
+        <van-tab title="已采收" name="HARVESTED" />
+        <van-tab title="已关闭" name="CLOSED" />
       </van-tabs>
     </div>
 
@@ -26,7 +28,7 @@
         <van-cell-group inset style="margin-bottom:8px" v-for="item in list" :key="item.id">
           <van-cell
             :title="item.batchCode"
-            :label="`品种: ${item.appleVariety || '-'} · 果园ID: ${item.orchardId || '-'}`"
+            :label="`品种: ${item.appleVariety || '-'} · ${item.orchardName || '果园ID:' + item.orchardId}${item.traceCode ? ' · 溯源:' + item.traceCode : ''}`"
             is-link
             @click="openDetailDrawer(item)"
           >
@@ -96,9 +98,11 @@
           <van-field label="状态">
             <template #input>
               <van-radio-group v-model="form.status" direction="horizontal">
-                <van-radio name="growing">种植中</van-radio>
-                <van-radio name="harvesting">采收中</van-radio>
-                <van-radio name="completed">已完成</van-radio>
+                <van-radio name="PLANTING">定植</van-radio>
+                <van-radio name="GROWING">生长中</van-radio>
+                <van-radio name="READY_FOR_HARVEST">待采收</van-radio>
+                <van-radio name="HARVESTED">已采收</van-radio>
+                <van-radio name="CLOSED">已关闭</van-radio>
               </van-radio-group>
             </template>
           </van-field>
@@ -124,7 +128,13 @@
       </div>
       <van-cell-group inset v-if="currentItem">
         <van-cell title="批次编号" :value="currentItem.batchCode" />
-        <van-cell title="果园ID" :value="currentItem.orchardId ?? '-'" />
+        <van-cell title="溯源码" v-if="currentItem.traceCode" is-link @click="goToTrace(currentItem.traceCode)">
+          <template #value>
+            <van-tag type="success" size="medium">{{ currentItem.traceCode }}</van-tag>
+          </template>
+        </van-cell>
+        <van-cell title="溯源码" v-else value="未生成（采收后自动关联）" />
+        <van-cell title="果园" :value="currentItem.orchardName || `ID: ${currentItem.orchardId}`" />
         <van-cell title="苹果品种" :value="currentItem.appleVariety || '-'" />
         <van-cell title="种植年份" :value="currentItem.plantYear ?? '-'" />
         <van-cell title="预计产量(kg)" :value="currentItem.expectedYield ?? '-'" />
@@ -166,21 +176,21 @@ const currentItem = ref(null)
 const query = reactive({ keyword: '', status: '', orchardId: '', page: 1, pageSize: 10 })
 const form = reactive({
   batchCode: '', orchardId: '', appleVariety: '', plantYear: '',
-  expectedYield: '', actualYield: '', harvestDate: '', status: 'growing'
+  expectedYield: '', actualYield: '', harvestDate: '', status: 'PLANTING'
 })
 
 function statusTagType(status) {
-  const map = { growing: 'success', harvesting: 'warning', completed: 'primary' }
+  const map = { PLANTING: 'primary', GROWING: 'success', READY_FOR_HARVEST: 'warning', HARVESTED: 'success', CLOSED: 'default' }
   return map[status] || 'default'
 }
 
 function statusLabel(status) {
-  const map = { growing: '种植中', harvesting: '采收中', completed: '已完成' }
+  const map = { PLANTING: '定植', GROWING: '生长中', READY_FOR_HARVEST: '待采收', HARVESTED: '已采收', CLOSED: '已关闭' }
   return map[status] || status || '-'
 }
 
 function resetForm() {
-  Object.assign(form, { batchCode: '', orchardId: '', appleVariety: '', plantYear: '', expectedYield: '', actualYield: '', harvestDate: '', status: 'growing' })
+  Object.assign(form, { batchCode: '', orchardId: '', appleVariety: '', plantYear: '', expectedYield: '', actualYield: '', harvestDate: '', status: 'PLANTING' })
 }
 
 async function loadList() {
@@ -234,7 +244,7 @@ function openEditDrawer(item) {
     expectedYield: item.expectedYield || '',
     actualYield: item.actualYield || '',
     harvestDate: item.harvestDate || '',
-    status: item.status || 'growing'
+    status: item.status || 'PLANTING'
   })
   editId.value = item.id
   showDetail.value = false
@@ -244,6 +254,11 @@ function openEditDrawer(item) {
 function openDetailDrawer(item) {
   currentItem.value = item
   showDetail.value = true
+}
+
+function goToTrace(traceCode) {
+  showDetail.value = false
+  router.push(`/trace/query?code=${traceCode}`)
 }
 
 function goToOperations(item) {

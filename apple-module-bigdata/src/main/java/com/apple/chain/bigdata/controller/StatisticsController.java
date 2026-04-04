@@ -42,6 +42,10 @@ public class StatisticsController {
         result.put("activeOrchards",       statisticsMapper.countActiveOrchards());
         result.put("completedOrders",      statisticsMapper.countCompletedOrders());
         result.put("totalTradeAmount",     statisticsMapper.sumCompletedTradeAmount());
+        result.put("totalProducts",        statisticsMapper.countTotalProducts());
+        result.put("lowInventory",         statisticsMapper.countLowInventory());
+        result.put("totalUsages",          statisticsMapper.countTotalUsages());
+        result.put("totalWarehouses",      statisticsMapper.countTotalWarehouses());
         return R.ok(result);
     }
 

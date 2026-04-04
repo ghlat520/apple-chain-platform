@@ -52,18 +52,32 @@ public interface StatisticsMapper {
     @Select("SELECT COUNT(*) FROM farm_farmer WHERE deleted = 0 AND status = 'INACTIVE'")
     long countInactiveFarmers();
 
+    // ===== Agricultural input & inventory =====
+
+    @Select("SELECT COUNT(*) FROM agri_product WHERE deleted = 0")
+    long countTotalProducts();
+
+    @Select("SELECT COUNT(*) FROM agri_inventory WHERE status IN ('LOW','EMPTY') AND deleted = 0")
+    long countLowInventory();
+
+    @Select("SELECT COUNT(*) FROM agri_usage WHERE deleted = 0")
+    long countTotalUsages();
+
+    @Select("SELECT COUNT(*) FROM wh_warehouse WHERE deleted = 0")
+    long countTotalWarehouses();
+
     // ===== Monthly trend: last 6 months, GROUP BY month =====
 
-    @Select("SELECT DATE_FORMAT(create_time, '%Y-%m') AS month, " +
+    @Select("SELECT FORMATDATETIME(create_time, 'yyyy-MM') AS ym, " +
             "COUNT(*) AS orderCount, " +
             "COALESCE(SUM(total_amount), 0) AS totalAmount, " +
             "COALESCE(SUM(quantity), 0) AS totalQuantity " +
             "FROM trade_order " +
             "WHERE deleted = 0 " +
             "AND status IN ('COMPLETED', 'SHIPPED', 'CONFIRMED') " +
-            "AND create_time >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 5 MONTH), '%Y-%m-01') " +
-            "GROUP BY DATE_FORMAT(create_time, '%Y-%m') " +
-            "ORDER BY month ASC")
+            "AND create_time >= DATEADD(MONTH, -5, CURRENT_TIMESTAMP) " +
+            "GROUP BY FORMATDATETIME(create_time, 'yyyy-MM') " +
+            "ORDER BY ym ASC")
     List<Map<String, Object>> monthlyOrderTrendLast6Months();
 
     // ===== Top 5 varieties by order count =====

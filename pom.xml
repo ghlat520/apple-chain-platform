@@ -25,6 +25,10 @@
         <module>apple-module-trace</module>
         <module>apple-module-trade</module>
         <module>apple-module-bigdata</module>
+        <module>apple-module-warehouse</module>
+        <module>apple-module-input</module>
+        <module>apple-module-coldchain</module>
+        <module>apple-module-finance</module>
         <module>apple-web</module>
     </modules>
 
@@ -78,6 +82,26 @@
             <dependency>
                 <groupId>com.apple.chain</groupId>
                 <artifactId>apple-module-bigdata</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apple.chain</groupId>
+                <artifactId>apple-module-warehouse</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apple.chain</groupId>
+                <artifactId>apple-module-input</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apple.chain</groupId>
+                <artifactId>apple-module-coldchain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apple.chain</groupId>
+                <artifactId>apple-module-finance</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

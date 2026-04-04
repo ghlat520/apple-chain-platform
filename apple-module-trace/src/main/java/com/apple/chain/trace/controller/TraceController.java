@@ -5,12 +5,18 @@ import com.apple.chain.common.result.R;
 import com.apple.chain.trace.entity.TraceChain;
 import com.apple.chain.trace.entity.TraceNode;
 import com.apple.chain.trace.service.TraceService;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
 /**
@@ -44,6 +50,21 @@ public class TraceController {
     @GetMapping("/scan/{traceCode}")
     public R<Map<String, Object>> scan(@PathVariable String traceCode) {
         return R.ok(traceService.publicScan(traceCode));
+    }
+
+    @Operation(summary = "生成溯源二维码PNG")
+    @GetMapping(value = "/qrcode/{traceCode}", produces = MediaType.IMAGE_PNG_VALUE)
+    public byte[] qrcode(@PathVariable String traceCode,
+                         @RequestParam(defaultValue = "300") int size) throws Exception {
+        // Verify trace code exists
+        traceService.getTraceDetail(traceCode);
+        // Generate QR code pointing to public scan URL
+        String scanUrl = "/scan/" + traceCode;
+        QRCodeWriter writer = new QRCodeWriter();
+        BitMatrix matrix = writer.encode(scanUrl, BarcodeFormat.QR_CODE, size, size);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(matrix, "PNG", out);
+        return out.toByteArray();
     }
 
     @Operation(summary = "添加溯源节点")

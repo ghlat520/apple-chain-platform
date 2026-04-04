@@ -134,6 +134,12 @@
           </template>
         </van-cell>
         <van-cell title="供货编号" :value="currentItem.supplyNo || '-'" />
+        <van-cell title="种植批次" :value="currentItem.batchCode || '-'" />
+        <van-cell title="溯源码" v-if="currentItem.traceCode" is-link @click="goToTrace(currentItem.traceCode)">
+          <template #value>
+            <van-tag type="success" size="medium">{{ currentItem.traceCode }}</van-tag>
+          </template>
+        </van-cell>
         <van-cell title="苹果品种" :value="currentItem.variety || '-'" />
         <van-cell title="数量(kg)" :value="currentItem.quantity ?? '-'" />
         <van-cell title="期望价(元/kg)" :value="currentItem.priceExpected ?? '-'" />
@@ -153,8 +159,11 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { tradeApi } from '@/api/trade.js'
 import { showToast, showConfirmDialog } from 'vant'
+
+const router = useRouter()
 
 const list = ref([])
 const loading = ref(false)
@@ -273,6 +282,11 @@ async function handleDelete(item) {
   } catch (e) {
     // user cancelled
   }
+}
+
+function goToTrace(traceCode) {
+  showDetail.value = false
+  router.push(`/trace/query?code=${traceCode}`)
 }
 
 async function handleExport() {

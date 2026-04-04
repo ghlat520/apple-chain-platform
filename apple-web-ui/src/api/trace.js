@@ -5,6 +5,7 @@ export const traceApi = {
   getChains: (params) => request.get('/trace/list', { params }),
   getChain: (traceCode) => request.get(`/trace/${traceCode}`),
   scanByCode: (traceCode) => request.get(`/trace/scan/${traceCode}`),
+  getQrCodeUrl: (traceCode, size = 300) => `/api/trace/qrcode/${traceCode}?size=${size}`,
   addNode: (data) => request.post('/trace/node', data),
   exportChains: () => downloadFile('/api/trace/export', '溯源链.csv'),
 

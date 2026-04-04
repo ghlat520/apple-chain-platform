@@ -42,6 +42,46 @@
         </div>
       </div>
 
+      <!-- Agricultural Input KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:#f3e5f5">
+            <van-icon name="label-o" color="#9c27b0" size="24" />
+          </div>
+          <div class="kpi-content">
+            <p class="kpi-value">{{ summary.totalProducts ?? '--' }}</p>
+            <p class="kpi-label">农资产品</p>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:#ffebee">
+            <van-icon name="warning-o" color="#f44336" size="24" />
+          </div>
+          <div class="kpi-content">
+            <p class="kpi-value">{{ summary.lowInventory ?? '--' }}</p>
+            <p class="kpi-label">库存预警</p>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:#e0f2f1">
+            <van-icon name="todo-list-o" color="#009688" size="24" />
+          </div>
+          <div class="kpi-content">
+            <p class="kpi-value">{{ summary.totalUsages ?? '--' }}</p>
+            <p class="kpi-label">使用记录</p>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:#fff8e1">
+            <van-icon name="shop-o" color="#ff8f00" size="24" />
+          </div>
+          <div class="kpi-content">
+            <p class="kpi-value">{{ summary.totalWarehouses ?? '--' }}</p>
+            <p class="kpi-label">仓库总数</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Trend Chart -->
       <div class="chart-card">
         <h3 class="chart-title">订单与溯源趋势</h3>
@@ -81,6 +121,32 @@
         </van-cell-group>
       </div>
 
+      <!-- Inventory Warnings -->
+      <div class="section-card">
+        <h3 class="section-title">库存预警 <van-tag type="danger" v-if="alertList.length">{{ alertList.length }}</van-tag></h3>
+        <van-cell-group inset v-if="alertList.length">
+          <van-cell
+            v-for="alert in alertList"
+            :key="alert.id"
+            :title="alert.productName"
+            is-link
+            @click="$router.push('/input/inventory')"
+          >
+            <template #label>
+              库存: {{ alert.stockQuantity }}{{ alert.unit }} · 预警线: {{ alert.warningLevel }}{{ alert.unit }}
+            </template>
+            <template #value>
+              <van-tag :type="alert.status === 'EMPTY' ? 'danger' : 'warning'">
+                {{ alert.status === 'EMPTY' ? '缺货' : '偏低' }}
+              </van-tag>
+            </template>
+          </van-cell>
+        </van-cell-group>
+        <van-cell-group inset v-else>
+          <van-cell title="库存正常" value="无预警" />
+        </van-cell-group>
+      </div>
+
       <!-- Quick Actions -->
       <div class="section-card">
         <h3 class="section-title">快速操作</h3>
@@ -89,6 +155,8 @@
           <van-button plain type="success" size="small" @click="$router.push('/cultivation/batches')">种植批次</van-button>
           <van-button plain type="warning" size="small" @click="$router.push('/trace/query')">溯源查询</van-button>
           <van-button plain type="danger" size="small" @click="$router.push('/trade/supply')">供货信息</van-button>
+          <van-button plain size="small" color="#9c27b0" @click="$router.push('/input/products')">农资产品</van-button>
+          <van-button plain size="small" color="#ff8f00" @click="$router.push('/warehouse/list')">仓库管理</van-button>
         </div>
       </div>
     </van-pull-refresh>
@@ -98,6 +166,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { statsApi } from '@/api/stats.js'
+import { inputApi } from '@/api/input.js'
 import * as echarts from 'echarts/core'
 import { LineChart, BarChart } from 'echarts/charts'
 import {
@@ -113,6 +182,7 @@ const summary = ref({})
 const pending = ref({})
 const trendData = ref([])
 const varietyData = ref([])
+const alertList = ref([])
 
 const trendChartRef = ref(null)
 const varietyChartRef = ref(null)
@@ -121,16 +191,18 @@ let varietyChart = null
 
 async function loadDashboard() {
   try {
-    const [sum, trend, topVarieties, pend] = await Promise.all([
+    const [sum, trend, topVarieties, pend, alerts] = await Promise.allSettled([
       statsApi.getSummary(),
       statsApi.getTrend(),
       statsApi.getTopVarieties(),
-      statsApi.getPending()
+      statsApi.getPending(),
+      inputApi.getInventoryAlerts()
     ])
-    summary.value = sum || {}
-    trendData.value = trend || []
-    varietyData.value = topVarieties || []
-    pending.value = pend || {}
+    summary.value = sum.status === 'fulfilled' ? (sum.value || {}) : {}
+    trendData.value = trend.status === 'fulfilled' ? (trend.value || []) : []
+    varietyData.value = topVarieties.status === 'fulfilled' ? (topVarieties.value || []) : []
+    pending.value = pend.status === 'fulfilled' ? (pend.value || {}) : {}
+    alertList.value = alerts.status === 'fulfilled' ? (alerts.value || []) : []
 
     await nextTick()
     renderTrendChart()
@@ -147,9 +219,9 @@ function renderTrendChart() {
   if (!trendChart) {
     trendChart = echarts.init(trendChartRef.value)
   }
-  const months = trendData.value.map((d) => d.month)
-  const orders = trendData.value.map((d) => d.orderCount)
-  const amounts = trendData.value.map((d) => Number(d.totalAmount || 0).toFixed(0))
+  const months = trendData.value.map((d) => d.month || d.ym || d.YM)
+  const orders = trendData.value.map((d) => d.orderCount || d.ORDERCOUNT)
+  const amounts = trendData.value.map((d) => Number(d.totalAmount || d.TOTALAMOUNT || 0).toFixed(0))
   trendChart.setOption({
     tooltip: { trigger: 'axis' },
     legend: { data: ['订单数', '交易额(元)'], bottom: 0 },
@@ -175,13 +247,13 @@ function renderVarietyChart() {
     xAxis: { type: 'value', axisLabel: { fontSize: 10 } },
     yAxis: {
       type: 'category',
-      data: varieties.map((d) => d.variety),
+      data: varieties.map((d) => d.variety || d.VARIETY),
       axisLabel: { fontSize: 10 }
     },
     series: [
       {
         type: 'bar',
-        data: varieties.map((d) => d.orderCount),
+        data: varieties.map((d) => d.orderCount || d.ORDERCOUNT),
         itemStyle: { color: '#07c160', borderRadius: [0, 4, 4, 0] }
       }
     ]

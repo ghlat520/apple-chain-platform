@@ -41,6 +41,22 @@
             <groupId>com.apple.chain</groupId>
             <artifactId>apple-module-bigdata</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-warehouse</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-input</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-coldchain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-finance</artifactId>
+        </dependency>
 
         <!-- Knife4j API docs -->
         <dependency>
@@ -74,7 +90,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 

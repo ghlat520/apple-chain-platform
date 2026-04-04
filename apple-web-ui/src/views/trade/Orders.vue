@@ -131,6 +131,11 @@
         <van-cell title="买方电话" :value="currentItem.buyerPhone || '-'" />
         <van-cell title="果园名称" :value="currentItem.orchardName || '-'" />
         <van-cell title="批次编号" :value="currentItem.batchCode || '-'" />
+        <van-cell title="溯源查询" is-link v-if="currentItem.batchCode" @click="goToTrace(currentItem.batchCode)">
+          <template #value>
+            <van-tag type="success" size="medium">查看溯源链路</van-tag>
+          </template>
+        </van-cell>
         <van-cell title="苹果品种" :value="currentItem.variety || '-'" />
         <van-cell title="等级" :value="currentItem.grade || '-'" />
         <van-cell title="数量(kg)" :value="currentItem.quantity ?? '-'" />
@@ -171,8 +176,11 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { tradeApi } from '@/api/trade.js'
 import { showToast, showConfirmDialog } from 'vant'
+
+const router = useRouter()
 
 const list = ref([])
 const loading = ref(false)
@@ -280,7 +288,6 @@ async function handleCreate() {
 }
 
 async function handleStatusChange(item, newStatus) {
-  const labelMap = { CONFIRMED: '确认', SHIPPED: '发货', COMPLETED: '完成', CANCELLED: '取消' }
   try {
     await showConfirmDialog({
       title: '状态变更',
@@ -288,11 +295,13 @@ async function handleStatusChange(item, newStatus) {
     })
     transitioning.value = true
     await tradeApi.updateOrderStatus(item.id, newStatus)
-    showToast({ type: 'success', message: `已${labelMap[newStatus] || '更新'}` })
+    showToast({ type: 'success', message: `已${statusLabel(newStatus)}` })
     showDetail.value = false
     loadList()
   } catch (e) {
-    // user cancelled
+    if (e !== 'cancel') {
+      showToast({ type: 'fail', message: e?.message || '操作失败' })
+    }
   } finally {
     transitioning.value = false
   }
@@ -308,6 +317,11 @@ async function handleDelete(item) {
   } catch (e) {
     // user cancelled
   }
+}
+
+function goToTrace(batchCode) {
+  showDetail.value = false
+  router.push(`/trace/records`)
 }
 
 async function handleExport() {

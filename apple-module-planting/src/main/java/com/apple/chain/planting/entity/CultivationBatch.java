@@ -77,4 +77,10 @@ public class CultivationBatch extends BaseEntity {
      * Optional remark.
      */
     private String remark;
+
+    /**
+     * Trace code linking to tr_trace_chain, e.g. TC20260301001.
+     * Set when batch status reaches HARVESTED.
+     */
+    private String traceCode;
 }
