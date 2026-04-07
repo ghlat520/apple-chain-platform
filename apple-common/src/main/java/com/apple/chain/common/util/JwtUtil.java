@@ -10,8 +10,11 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,6 +28,8 @@ public class JwtUtil {
     private static final String CLAIM_USER_ID = "userId";
     private static final String CLAIM_USERNAME = "username";
     private static final String CLAIM_ROLE_CODE = "roleCode";
+    private static final String CLAIM_ROLES = "roles";
+    private static final String CLAIM_PERMS = "perms";
 
     @Value("${jwt.secret:apple-chain-platform-jwt-secret-key-must-be-at-least-256-bits}")
     private String secret;
@@ -38,13 +43,34 @@ public class JwtUtil {
     }
 
     /**
-     * Generate JWT token for a user.
+     * Generate JWT token for a user (legacy single-role variant).
+     * Kept for backward compatibility — new code should use the
+     * {@link #generateToken(Long, String, String, Collection, Collection)} overload
+     * which embeds the user's roles and permission codes.
      */
     public String generateToken(Long userId, String username, String roleCode) {
+        return generateToken(userId, username, roleCode,
+                roleCode == null ? Collections.emptyList() : Collections.singletonList(roleCode),
+                Collections.emptyList());
+    }
+
+    /**
+     * Generate JWT token carrying full RBAC payload.
+     *
+     * @param userId      user primary key
+     * @param username    login name
+     * @param roleCode    primary role code (kept for backward compatibility with legacy clients)
+     * @param roles       full set of role codes the user holds
+     * @param permissions resolved permission codes (used by RbacInterceptor)
+     */
+    public String generateToken(Long userId, String username, String roleCode,
+                                Collection<String> roles, Collection<String> permissions) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_USER_ID, userId);
         claims.put(CLAIM_USERNAME, username);
         claims.put(CLAIM_ROLE_CODE, roleCode);
+        claims.put(CLAIM_ROLES, roles == null ? Collections.emptyList() : List.copyOf(roles));
+        claims.put(CLAIM_PERMS, permissions == null ? Collections.emptyList() : List.copyOf(permissions));
 
         long now = System.currentTimeMillis();
         return Jwts.builder()

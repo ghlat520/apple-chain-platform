@@ -1,5 +1,6 @@
 package com.apple.chain.config;
 
+import com.apple.chain.common.auth.RbacInterceptor;
 import com.apple.chain.common.interceptor.AuthInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ import java.util.List;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;
+    private final RbacInterceptor rbacInterceptor;
 
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/user/auth/login",
@@ -33,7 +35,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 1. JWT verification + UserContext population
         registry.addInterceptor(authInterceptor)
+                .order(1)
+                .addPathPatterns("/api/**")
+                .excludePathPatterns(PUBLIC_PATHS);
+        // 2. RBAC permission gate (@RequirePerm) + PermissionContext population
+        registry.addInterceptor(rbacInterceptor)
+                .order(2)
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(PUBLIC_PATHS);
     }

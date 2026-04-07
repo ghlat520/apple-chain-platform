@@ -5,20 +5,24 @@ import lombok.Getter;
 
 import java.util.List;
 
+/**
+ * Response shape for {@code GET /api/user/auth/me}.
+ * Returns the user profile alongside the resolved RBAC payload so the
+ * front-end can populate its Pinia auth store in a single round trip.
+ */
 @Getter
 @Builder
-public class LoginResponse {
+public class CurrentUserDTO {
 
-    private final String token;
     private final Long userId;
     private final String username;
     private final String realName;
-    /** Primary role code (kept for backward compatibility with existing UI code). */
-    private final String roleCode;
+    private final String phone;
+    private final String email;
     private final String orgName;
     private final String avatar;
-    /** All role codes the user holds. */
+    /** Primary (legacy) role code. */
+    private final String roleCode;
     private final List<String> roles;
-    /** Resolved permission codes (resource:action) for the user. */
     private final List<String> permissions;
 }
