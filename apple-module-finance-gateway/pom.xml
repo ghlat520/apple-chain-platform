@@ -10,19 +10,19 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>apple-module-trade</artifactId>
+    <artifactId>apple-module-finance-gateway</artifactId>
     <packaging>jar</packaging>
-    <name>apple-module-trade</name>
-    <description>Trade and transaction matching module</description>
+    <name>apple-module-finance-gateway</name>
+    <description>
+        M8 finance gateway adapter: isolates third-party SDKs (e签宝 contract,
+        WeChat/UnionPay payment, 百望云 invoice) behind clean interfaces. Default
+        bundled implementation is mock; real adapters added when partners onboard.
+    </description>
 
     <dependencies>
         <dependency>
             <groupId>com.apple.chain</groupId>
             <artifactId>apple-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.apple.chain</groupId>
-            <artifactId>apple-module-finance-gateway</artifactId>
         </dependency>
     </dependencies>
 </project>
