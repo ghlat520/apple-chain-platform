@@ -24,7 +24,7 @@ import java.util.UUID;
  * OpenLineage / DataHub emitter — real HTTP client (v2.0 P0).
  *
  * <p>Sends an OpenLineage RunEvent (eventType=COMPLETE) to DataHub GMS at
- * {@code ${bigdata.datahub.gms-url}/openapi/v2/lineage} for every collect
+ * {@code ${bigdata.datahub.gms-url}/openapi/openlineage/api/v1/lineage} for every collect
  * job run. The event captures job identity (namespace/name) and the output
  * dataset (ClickHouse table from {@code BdCollectJob#targetTable}).</p>
  *
@@ -88,7 +88,10 @@ public class DataHubLineageClient {
             String payload = objectMapper.writeValueAsString(event);
             HttpEntity<String> entity = new HttpEntity<>(payload, headers);
 
-            String url = gmsUrl + "/openapi/v2/lineage";
+            // Verified correct endpoint via DataHub v0.13.3 swagger api-docs (2026-04-07).
+            // Earlier /openapi/v2/lineage path returns 404 — LineageApiImpl lives under
+            // /openapi/openlineage/api/v1/lineage.
+            String url = gmsUrl + "/openapi/openlineage/api/v1/lineage";
             ResponseEntity<String> resp = restTemplate.postForEntity(url, entity, String.class);
 
             if (resp.getStatusCode().is2xxSuccessful()) {
