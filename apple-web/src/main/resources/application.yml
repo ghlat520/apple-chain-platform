@@ -64,6 +64,18 @@ knife4j:
   setting:
     language: zh_cn
 
+# M3 D1+D2: SeaTunnel collection + DataHub lineage hooks
+bigdata:
+  seatunnel:
+    rest-url: http://apple-seatunnel:5801
+  datahub:
+    enabled: false
+    gms-url: http://datahub-gms:8080
+
+ds:
+  callback:
+    token: ${DS_CALLBACK_TOKEN:changeme}
+
 logging:
   level:
     com.apple.chain: debug
