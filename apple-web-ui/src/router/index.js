@@ -45,6 +45,18 @@ const routes = [
         component: () => import('@/views/cultivation/GrowthRecords.vue')
       },
       {
+        // M6 — maturity sample input
+        path: 'planting/maturity-record',
+        name: 'MaturityRecord',
+        component: () => import('@/views/planting/MaturityRecord.vue')
+      },
+      {
+        // M6 — harvest recommendation window viewer
+        path: 'planting/harvest-recommend',
+        name: 'HarvestRecommend',
+        component: () => import('@/views/planting/HarvestRecommend.vue')
+      },
+      {
         path: 'trace/records',
         name: 'TraceRecords',
         component: () => import('@/views/trace/Records.vue')
