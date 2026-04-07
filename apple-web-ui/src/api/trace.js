@@ -17,5 +17,14 @@ export const traceApi = {
   deleteBatch: (id) => request.delete(`/trace/batches/${id}`),
   addRecord: (batchId, data) => request.post(`/trace/batches/${batchId}/records`, data),
   listRecords: (batchId) => request.get(`/trace/batches/${batchId}/records`),
-  exportBatches: () => downloadFile('/api/trace/batches/export', '溯源批次.csv')
+  exportBatches: () => downloadFile('/api/trace/batches/export', '溯源批次.csv'),
+
+  // M12 — Three-level trace code (一果一码)
+  generateBox: (batchId, boxCount) =>
+    request.post('/trace/code/generate-box', null, { params: { batchId, boxCount } }),
+  generateFruit: (boxCode, fruitCount) =>
+    request.post('/trace/code/generate-fruit', null, { params: { boxCode, fruitCount } }),
+  verifyCode: (code) => request.get(`/trace/code/verify/${code}`),
+  exportVdp: (batchId, format = 'csv') =>
+    downloadFile(`/api/trace/code/vdp-export/${batchId}?format=${format}`, `VDP_${batchId}.${format}`)
 }
