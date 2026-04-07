@@ -32,6 +32,12 @@ const routes = [
         meta: { title: '果园详情' }
       },
       {
+        path: 'orchards-map',
+        name: 'OrchardMap',
+        component: () => import('@/views/OrchardMap.vue'),
+        meta: { title: '果园地图' }
+      },
+      {
         path: 'trace',
         name: 'Trace',
         component: () => import('@/views/TraceList.vue'),

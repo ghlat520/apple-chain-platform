@@ -5,8 +5,10 @@ import com.apple.chain.common.result.ResultCode;
 import com.apple.chain.common.util.JwtUtil;
 import com.apple.chain.user.dto.LoginRequest;
 import com.apple.chain.user.dto.LoginResponse;
+import com.apple.chain.user.entity.SysRole;
 import com.apple.chain.user.entity.User;
 import com.apple.chain.user.mapper.UserMapper;
+import com.apple.chain.user.service.RbacService;
 import com.apple.chain.user.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -23,7 +25,9 @@ import org.springframework.util.StringUtils;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,6 +36,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final RbacService rbacService;
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -46,16 +51,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BizException("用户名或密码错误");
         }
 
-        String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRoleCode());
+        // Resolve RBAC payload from sys_user_role / sys_role_permission.
+        // Fallback to legacy User.roleCode (V4 single-field) when no sys_user_role row exists,
+        // so seeded users without an explicit assignment can still log in during the
+        // dual-write transition window.
+        List<SysRole> roles = rbacService.getRolesForUser(user.getId());
+        List<String> roleCodes = roles.isEmpty() && user.getRoleCode() != null
+                ? Collections.singletonList(user.getRoleCode())
+                : roles.stream().map(SysRole::getRoleCode).collect(Collectors.toList());
+        List<String> permissions = rbacService.getPermissionCodesForUser(user.getId());
+
+        String primaryRole = roleCodes.isEmpty() ? user.getRoleCode() : roleCodes.get(0);
+        String token = jwtUtil.generateToken(
+                user.getId(), user.getUsername(), primaryRole, roleCodes, permissions);
 
         return LoginResponse.builder()
                 .token(token)
                 .userId(user.getId())
                 .username(user.getUsername())
                 .realName(user.getRealName())
-                .roleCode(user.getRoleCode())
+                .roleCode(primaryRole)
                 .orgName(user.getOrgName())
                 .avatar(user.getAvatar())
+                .roles(roleCodes)
+                .permissions(permissions)
                 .build();
     }
 

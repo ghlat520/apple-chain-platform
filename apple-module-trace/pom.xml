@@ -21,6 +21,10 @@
             <artifactId>apple-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-chain</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
             <version>3.5.3</version>

@@ -20,5 +20,9 @@
             <groupId>com.apple.chain</groupId>
             <artifactId>apple-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-finance-gateway</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { showToast } from 'vant'
 import { useAuthStore } from '@/store/auth.js'
 
 const routes = [
@@ -45,6 +46,18 @@ const routes = [
         component: () => import('@/views/cultivation/GrowthRecords.vue')
       },
       {
+        // M6 — maturity sample input
+        path: 'planting/maturity-record',
+        name: 'MaturityRecord',
+        component: () => import('@/views/planting/MaturityRecord.vue')
+      },
+      {
+        // M6 — harvest recommendation window viewer
+        path: 'planting/harvest-recommend',
+        name: 'HarvestRecommend',
+        component: () => import('@/views/planting/HarvestRecommend.vue')
+      },
+      {
         path: 'trace/records',
         name: 'TraceRecords',
         component: () => import('@/views/trace/Records.vue')
@@ -53,6 +66,11 @@ const routes = [
         path: 'trace/query',
         name: 'TraceQuery',
         component: () => import('@/views/trace/Query.vue')
+      },
+      {
+        path: 'trace/code-generate',
+        name: 'TraceCodeGenerate',
+        component: () => import('@/views/trace/CodeGenerate.vue')
       },
       {
         path: 'farm/farmers',
@@ -157,6 +175,13 @@ const routes = [
         path: 'finance/risks',
         name: 'Risks',
         component: () => import('@/views/finance/Risks.vue')
+      },
+      // Admin / RBAC management (M1)
+      {
+        path: 'admin/roles',
+        name: 'AdminRoles',
+        component: () => import('@/views/admin/Roles.vue'),
+        meta: { perm: 'role:read' }
       }
     ]
   }
@@ -169,13 +194,33 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  if (to.meta.requiresAuth !== false && !token) {
-    next('/login')
-  } else if (to.path === '/login' && token) {
-    next('/')
-  } else {
-    next()
+  // Public pages: bypass both auth and permission checks.
+  if (to.meta.requiresAuth === false) {
+    if (to.path === '/login' && token) {
+      next('/')
+    } else {
+      next()
+    }
+    return
   }
+  // Authenticated routes: require token first.
+  if (!token) {
+    next('/login')
+    return
+  }
+  // RBAC permission gate (spec § 1.6): meta.perm = "trade:write"
+  // or meta.perm = ["trade:write","trade:approve"] (AND semantics).
+  const required = to.meta?.perm
+  if (required) {
+    const auth = useAuthStore()
+    const codes = Array.isArray(required) ? required : [required]
+    if (!auth.hasAllPerms(codes)) {
+      showToast({ type: 'fail', message: '权限不足' })
+      next(false)
+      return
+    }
+  }
+  next()
 })
 
 export default router

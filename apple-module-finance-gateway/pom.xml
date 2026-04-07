@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.apple.chain</groupId>
+        <artifactId>apple-chain-platform</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>apple-module-finance-gateway</artifactId>
+    <packaging>jar</packaging>
+    <name>apple-module-finance-gateway</name>
+    <description>
+        M8 finance gateway adapter: isolates third-party SDKs (e签宝 contract,
+        WeChat/UnionPay payment, 百望云 invoice) behind clean interfaces. Default
+        bundled implementation is mock; real adapters added when partners onboard.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-common</artifactId>
+        </dependency>
+    </dependencies>
+</project>

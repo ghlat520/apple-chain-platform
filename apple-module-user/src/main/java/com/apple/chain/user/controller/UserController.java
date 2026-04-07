@@ -1,5 +1,6 @@
 package com.apple.chain.user.controller;
 
+import com.apple.chain.common.auth.RequirePerm;
 import com.apple.chain.common.result.PageResult;
 import com.apple.chain.common.result.R;
 import com.apple.chain.user.entity.User;
@@ -24,6 +25,7 @@ public class UserController {
 
     @Operation(summary = "用户列表（分页）")
     @GetMapping("/list")
+    @RequirePerm("user:read")
     public R<PageResult<User>> list(
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") int size,
@@ -35,12 +37,14 @@ public class UserController {
 
     @Operation(summary = "创建用户")
     @PostMapping("/create")
+    @RequirePerm("user:write")
     public R<User> create(@RequestBody User user) {
         return R.ok(userService.createUser(user));
     }
 
     @Operation(summary = "更新用户")
     @PutMapping("/{id}")
+    @RequirePerm("user:write")
     public R<User> update(
             @PathVariable Long id,
             @RequestBody User user) {
@@ -49,6 +53,7 @@ public class UserController {
 
     @Operation(summary = "删除用户（软删除）")
     @DeleteMapping("/{id}")
+    @RequirePerm("user:write")
     public R<Void> delete(@PathVariable Long id) {
         userService.deleteUser(id);
         return R.ok("删除成功", null);
@@ -56,6 +61,7 @@ public class UserController {
 
     @Operation(summary = "导出用户CSV")
     @GetMapping("/export")
+    @RequirePerm("user:read")
     public void export(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String roleCode,

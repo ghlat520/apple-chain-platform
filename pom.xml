@@ -23,12 +23,15 @@
         <module>apple-module-user</module>
         <module>apple-module-planting</module>
         <module>apple-module-trace</module>
+        <module>apple-module-chain</module>
         <module>apple-module-trade</module>
         <module>apple-module-bigdata</module>
         <module>apple-module-warehouse</module>
         <module>apple-module-input</module>
         <module>apple-module-coldchain</module>
+        <module>apple-module-iot</module>
         <module>apple-module-finance</module>
+        <module>apple-module-finance-gateway</module>
         <module>apple-web</module>
     </modules>
 
@@ -76,6 +79,11 @@
             </dependency>
             <dependency>
                 <groupId>com.apple.chain</groupId>
+                <artifactId>apple-module-chain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apple.chain</groupId>
                 <artifactId>apple-module-trade</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -101,7 +109,17 @@
             </dependency>
             <dependency>
                 <groupId>com.apple.chain</groupId>
+                <artifactId>apple-module-iot</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apple.chain</groupId>
                 <artifactId>apple-module-finance</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apple.chain</groupId>
+                <artifactId>apple-module-finance-gateway</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
