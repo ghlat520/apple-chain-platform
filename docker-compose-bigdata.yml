@@ -1,0 +1,422 @@
+#
+# Apple-Chain-Platform · Big Data Stack (M1)
+#
+# Components:
+#   - Canal          (MySQL binlog CDC -> Kafka) [legacy profile only]
+#   - Kafka (KRaft)  (event bus / data pipeline)
+#   - ClickHouse     (OLAP column store for dashboards & reports)
+#   - DolphinScheduler (ETL DAG orchestration)
+#   - Spark          (batch + structured streaming)
+#   - Redis          (hot cache for dashboards)
+#   - SeaTunnel      (unified ingestion engine) [collection profile]
+#   - DataHub stack  (metadata + column-level lineage) [governance profile]
+#
+# Usage:
+#   docker compose -f docker-compose-bigdata.yml up -d
+#   docker compose -f docker-compose-bigdata.yml --profile governance up -d
+#   docker compose -f docker-compose-bigdata.yml --profile collection up -d
+#   docker compose -f docker-compose-bigdata.yml logs -f
+#
+# Network: all services share network `apple-bigdata-net`
+# Persistence: all stateful volumes under named docker volumes
+#
+version: "3.8"
+
+networks:
+  apple-bigdata-net:
+    driver: bridge
+
+volumes:
+  kafka-data:
+  clickhouse-data:
+  clickhouse-logs:
+  ds-data:
+  spark-data:
+  canal-conf:
+  st-logs:
+  datahub-mysql-data:
+  datahub-es-data:
+  datahub-neo4j-data:
+
+services:
+  # -----------------------------------------------------------
+  # Kafka (KRaft mode, single broker for MVP)
+  # -----------------------------------------------------------
+  kafka:
+    image: bitnamilegacy/kafka:3.6.2
+    container_name: apple-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    volumes:
+      - kafka-data:/bitnami/kafka
+    networks:
+      - apple-bigdata-net
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # -----------------------------------------------------------
+  # Canal Server — legacy profile only (replaced by SeaTunnel in M3)
+  # -----------------------------------------------------------
+  canal:
+    image: canal/canal-server:v1.1.7
+    container_name: apple-canal
+    restart: unless-stopped
+    profiles: ["legacy"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "11111:11111"
+      - "11112:11112"
+    environment:
+      canal.auto.scan: "false"
+      canal.destinations: apple_chain
+      canal.instance.master.address: host.docker.internal:3306
+      canal.instance.dbUsername: canal
+      canal.instance.dbPassword: canal
+      canal.instance.connectionCharset: UTF-8
+      canal.instance.tsdb.enable: "true"
+      canal.serverMode: kafka
+      canal.mq.servers: kafka:9092
+      canal.mq.flatMessage: "true"
+      canal.instance.filter.regex: "apple_chain\\..*"
+      canal.mq.dynamicTopic: "cdc.apple_chain..*:apple_chain\\..*"
+    volumes:
+      - canal-conf:/home/admin/canal-server/conf
+    networks:
+      - apple-bigdata-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # -----------------------------------------------------------
+  # ClickHouse (OLAP)
+  # -----------------------------------------------------------
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    container_name: apple-clickhouse
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    environment:
+      CLICKHOUSE_DB: apple_bigdata_ods
+      CLICKHOUSE_USER: apple
+      CLICKHOUSE_PASSWORD: apple123
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - clickhouse-logs:/var/log/clickhouse-server
+      - ./config/clickhouse/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - apple-bigdata-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # -----------------------------------------------------------
+  # Spark (standalone master + 1 worker)
+  # -----------------------------------------------------------
+  spark-master:
+    image: bitnamilegacy/spark:3.5.6
+    container_name: apple-spark-master
+    restart: unless-stopped
+    environment:
+      SPARK_MODE: master
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    ports:
+      - "18080:8080"
+      - "7077:7077"
+    volumes:
+      - spark-data:/opt/bitnami/spark/work
+    networks:
+      - apple-bigdata-net
+
+  spark-worker:
+    image: bitnamilegacy/spark:3.5.6
+    container_name: apple-spark-worker
+    restart: unless-stopped
+    depends_on:
+      - spark-master
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_WORKER_MEMORY: 2G
+      SPARK_WORKER_CORES: 2
+    networks:
+      - apple-bigdata-net
+
+  # -----------------------------------------------------------
+  # DolphinScheduler (standalone all-in-one)
+  # -----------------------------------------------------------
+  dolphinscheduler:
+    image: apache/dolphinscheduler-standalone-server:3.2.1
+    container_name: apple-dolphinscheduler
+    restart: unless-stopped
+    depends_on:
+      - kafka
+      - clickhouse
+    ports:
+      - "12345:12345"
+      - "25333:25333"
+    environment:
+      DATABASE: h2
+      REGISTRY_TYPE: zookeeper
+      JAVA_OPTS: "-Xms1g -Xmx2g -Xmn512m"
+    volumes:
+      - ds-data:/tmp/dolphinscheduler
+    networks:
+      - apple-bigdata-net
+
+  # -----------------------------------------------------------
+  # SeaTunnel 2.3.x — collection profile
+  # -----------------------------------------------------------
+  seatunnel:
+    image: apache/seatunnel:2.3.5
+    container_name: apple-seatunnel
+    restart: unless-stopped
+    profiles: ["collection"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "5801:5801"
+    environment:
+      ST_ENGINE: zeta-local
+      JVM_OPTS: "-Xms1g -Xmx2g"
+    volumes:
+      - ./config/seatunnel/jobs:/opt/seatunnel/jobs:ro
+      - ./config/seatunnel/plugins:/opt/seatunnel/plugins:ro
+      - st-logs:/opt/seatunnel/logs
+    networks:
+      - apple-bigdata-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ===========================================================
+  # DataHub stack (v2.0 P0 — metadata + column-level lineage)
+  # Profile-gated: only starts with `--profile governance`.
+  #   docker compose -f docker-compose-bigdata.yml --profile governance up -d
+  # UI:  http://localhost:9002      (datahub/datahub)
+  # GMS: http://localhost:18081     (REST endpoint for OpenLineage POSTs)
+  #
+  # IMPORTANT — schema init (run ONCE after first `up -d`):
+  #   1. Load the ebean table schema:
+  #        curl -sSL "https://raw.githubusercontent.com/datahub-project/datahub/v0.13.3/docker/mysql-setup/init.sql" \
+  #          | sed 's/`DATAHUB_DB_NAME`/datahub/g' \
+  #          | docker exec -i apple-datahub-mysql mysql -udatahub -pdatahub datahub
+  #   2. Run SystemUpdate to build ES indices:
+  #        docker compose -f docker-compose-bigdata.yml --profile governance run --rm datahub-upgrade
+  # ===========================================================
+  datahub-mysql:
+    image: mysql:8.0
+    container_name: apple-datahub-mysql
+    restart: unless-stopped
+    profiles: ["governance"]
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+      - --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: datahub
+      MYSQL_DATABASE: datahub
+      MYSQL_USER: datahub
+      MYSQL_PASSWORD: datahub
+    volumes:
+      - datahub-mysql-data:/var/lib/mysql
+    networks:
+      - apple-bigdata-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pdatahub"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  datahub-elasticsearch:
+    image: elasticsearch:7.17.9
+    container_name: apple-datahub-elasticsearch
+    restart: unless-stopped
+    profiles: ["governance"]
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - datahub-es-data:/usr/share/elasticsearch/data
+    networks:
+      - apple-bigdata-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  datahub-neo4j:
+    image: neo4j:4.4-community
+    container_name: apple-datahub-neo4j
+    restart: unless-stopped
+    profiles: ["governance"]
+    environment:
+      NEO4J_AUTH: neo4j/datahub
+      NEO4J_dbms_default__database: graph.db
+      NEO4J_dbms_allow__upgrade: "true"
+    volumes:
+      - datahub-neo4j-data:/data
+    networks:
+      - apple-bigdata-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  datahub-upgrade:
+    image: acryldata/datahub-upgrade:v0.13.3
+    container_name: apple-datahub-upgrade
+    restart: "no"
+    profiles: ["governance"]
+    depends_on:
+      datahub-mysql:
+        condition: service_healthy
+      datahub-elasticsearch:
+        condition: service_healthy
+      datahub-neo4j:
+        condition: service_healthy
+    command: ["-u", "SystemUpdate"]
+    environment:
+      EBEAN_DATASOURCE_USERNAME: datahub
+      EBEAN_DATASOURCE_PASSWORD: datahub
+      EBEAN_DATASOURCE_HOST: datahub-mysql:3306
+      EBEAN_DATASOURCE_URL: jdbc:mysql://datahub-mysql:3306/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
+      EBEAN_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+      ELASTICSEARCH_HOST: datahub-elasticsearch
+      ELASTICSEARCH_PORT: "9200"
+      GRAPH_SERVICE_IMPL: neo4j
+      NEO4J_HOST: http://datahub-neo4j:7474
+      NEO4J_URI: bolt://datahub-neo4j
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: datahub
+      DATAHUB_GMS_HOST: datahub-gms
+      DATAHUB_GMS_PORT: "8080"
+      ENTITY_REGISTRY_CONFIG_PATH: /datahub/datahub-gms/resources/entity-registry.yml
+      MAE_CONSUMER_ENABLED: "false"
+      MCE_CONSUMER_ENABLED: "false"
+      PE_CONSUMER_ENABLED: "false"
+      KAFKA_BOOTSTRAP_SERVER: "kafka:9092"
+      SCHEMA_REGISTRY_TYPE: "INTERNAL"
+      JAVA_OPTS: "-Xms512m -Xmx1g"
+    networks:
+      - apple-bigdata-net
+
+  datahub-gms:
+    image: acryldata/datahub-gms:v0.13.3
+    container_name: apple-datahub-gms
+    restart: unless-stopped
+    profiles: ["governance"]
+    depends_on:
+      datahub-mysql:
+        condition: service_healthy
+      datahub-elasticsearch:
+        condition: service_healthy
+      datahub-neo4j:
+        condition: service_healthy
+    ports:
+      - "18081:8080"
+    environment:
+      EBEAN_DATASOURCE_USERNAME: datahub
+      EBEAN_DATASOURCE_PASSWORD: datahub
+      EBEAN_DATASOURCE_HOST: datahub-mysql:3306
+      EBEAN_DATASOURCE_URL: jdbc:mysql://datahub-mysql:3306/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
+      EBEAN_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+      ELASTICSEARCH_HOST: datahub-elasticsearch
+      ELASTICSEARCH_PORT: "9200"
+      GRAPH_SERVICE_IMPL: neo4j
+      NEO4J_HOST: http://datahub-neo4j:7474
+      NEO4J_URI: bolt://datahub-neo4j
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: datahub
+      ENTITY_REGISTRY_CONFIG_PATH: /datahub/datahub-gms/resources/entity-registry.yml
+      MAE_CONSUMER_ENABLED: "false"
+      MCE_CONSUMER_ENABLED: "false"
+      PE_CONSUMER_ENABLED: "false"
+      KAFKA_BOOTSTRAP_SERVER: "kafka:9092"
+      SCHEMA_REGISTRY_TYPE: "INTERNAL"
+      JAVA_OPTS: "-Xms1g -Xmx2g"
+    networks:
+      - apple-bigdata-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 15
+      start_period: 300s
+
+  datahub-frontend:
+    image: acryldata/datahub-frontend-react:v0.13.3
+    container_name: apple-datahub-frontend
+    restart: unless-stopped
+    profiles: ["governance"]
+    depends_on:
+      datahub-gms:
+        condition: service_healthy
+    ports:
+      - "9002:9002"
+    environment:
+      DATAHUB_GMS_HOST: datahub-gms
+      DATAHUB_GMS_PORT: "8080"
+      DATAHUB_SECRET: YouKnowNothing_apple_chain
+      DATAHUB_APP_VERSION: "1.0"
+      DATAHUB_PLAY_MEM_BUFFER_SIZE: 10MB
+      JAVA_OPTS: "-Xms512m -Xmx1g"
+      AUTH_JAAS_ENABLED: "true"
+      # Frontend application.conf hardcodes these ${} refs even if unused
+      KAFKA_BOOTSTRAP_SERVER: "kafka:9092"
+      KAFKA_SCHEMAREGISTRY_URL: "http://datahub-gms:8080/schema-registry/api/"
+      DATAHUB_TRACKING_TOPIC: "DataHubUsageEvent_v1"
+      ELASTIC_CLIENT_HOST: "datahub-elasticsearch"
+      ELASTIC_CLIENT_PORT: "9200"
+    networks:
+      - apple-bigdata-net
+
+  # -----------------------------------------------------------
+  # Redis (hot cache for bigdata dashboards)
+  # -----------------------------------------------------------
+  redis-bigdata:
+    image: redis:7-alpine
+    container_name: apple-redis-bigdata
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - apple-bigdata-net
