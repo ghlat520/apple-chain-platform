@@ -6,12 +6,14 @@ import com.apple.chain.trace.entity.TraceBatch;
 import com.apple.chain.trace.entity.TraceCode;
 import com.apple.chain.trace.mapper.TraceBatchMapper;
 import com.apple.chain.trace.mapper.TraceCodeMapper;
+import com.apple.chain.trace.service.ChainSubmitService;
 import com.apple.chain.trace.service.TraceCodeService;
 import com.apple.chain.trace.util.Crc16;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +54,13 @@ public class TraceCodeServiceImpl
     private static final String QR_URL_TEMPLATE = "/public/scan/%s";
 
     private final TraceBatchMapper traceBatchMapper;
+
+    /**
+     * M2 hook: optional so existing trace tests (which mock only TraceBatchMapper)
+     * keep working. ObjectProvider yields null when no ChainSubmitService bean
+     * is on the context (e.g. unit tests).
+     */
+    private final ObjectProvider<ChainSubmitService> chainSubmitServiceProvider;
 
     // ===================================================================
     //  BOX generation
@@ -258,6 +267,34 @@ public class TraceCodeServiceImpl
         tc.setQrUrl(String.format(QR_URL_TEMPLATE, batch.getBatchCode()));
         tc.setStatus("ACTIVE");
         save(tc);
+        submitChainIfAvailable(batch, tc);
+    }
+
+    /**
+     * M2 hook: push the BATCH-level trace code snapshot to the chain submit
+     * service (mock or real). Failures here MUST NOT break trace code generation,
+     * so we catch every exception — async upload retries handle eventual consistency.
+     */
+    private void submitChainIfAvailable(TraceBatch batch, TraceCode tc) {
+        if (chainSubmitServiceProvider == null) {
+            return; // unit test path: no Spring context, no provider injected
+        }
+        ChainSubmitService chainSubmit = chainSubmitServiceProvider.getIfAvailable();
+        if (chainSubmit == null) {
+            return;
+        }
+        try {
+            Map<String, Object> snapshot = new HashMap<>();
+            snapshot.put("traceCode", tc.getCode());
+            snapshot.put("granularity", GRAN_BATCH);
+            snapshot.put("batchId", batch.getId());
+            snapshot.put("batchCode", batch.getBatchCode());
+            snapshot.put("orchardId", batch.getOrchardId());
+            snapshot.put("status", tc.getStatus());
+            chainSubmit.submit(tc.getCode(), GRAN_BATCH, tc.getId(), snapshot);
+        } catch (Exception e) {
+            log.warn("M2 chain submit failed for {}: {}", tc.getCode(), e.toString());
+        }
     }
 
     /** BOX format: {batchCode}-B{seq3}-{CRC4} */

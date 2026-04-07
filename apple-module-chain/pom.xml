@@ -10,29 +10,20 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>apple-module-trace</artifactId>
+    <artifactId>apple-module-chain</artifactId>
     <packaging>jar</packaging>
-    <name>apple-module-trace</name>
-    <description>Traceability module</description>
+    <name>apple-module-chain</name>
+    <description>
+        Blockchain integration adapter (M2). Isolates the 奥链 (Aochain) SDK
+        choice from business logic. The interface lives here and a mock impl
+        is bundled by default. When the real Aochain SDK lands, only this
+        module changes.
+    </description>
 
     <dependencies>
         <dependency>
             <groupId>com.apple.chain</groupId>
             <artifactId>apple-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.apple.chain</groupId>
-            <artifactId>apple-module-chain</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.zxing</groupId>
-            <artifactId>core</artifactId>
-            <version>3.5.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.zxing</groupId>
-            <artifactId>javase</artifactId>
-            <version>3.5.3</version>
         </dependency>
     </dependencies>
 </project>

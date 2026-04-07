@@ -35,6 +35,10 @@
         </dependency>
         <dependency>
             <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-chain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
             <artifactId>apple-module-trade</artifactId>
         </dependency>
         <dependency>
@@ -55,7 +59,15 @@
         </dependency>
         <dependency>
             <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-iot</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
             <artifactId>apple-module-finance</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-finance-gateway</artifactId>
         </dependency>
 
         <!-- Knife4j API docs -->
