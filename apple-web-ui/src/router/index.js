@@ -67,6 +67,11 @@ const routes = [
         component: () => import('@/views/trace/Query.vue')
       },
       {
+        path: 'trace/code-generate',
+        name: 'TraceCodeGenerate',
+        component: () => import('@/views/trace/CodeGenerate.vue')
+      },
+      {
         path: 'farm/farmers',
         name: 'Farmers',
         component: () => import('@/views/farm/Farmers.vue')
