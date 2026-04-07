@@ -34,6 +34,18 @@ public class Orchard extends BaseEntity {
     private BigDecimal longitude;
     private BigDecimal latitude;
 
+    /** M4 GIS: polygon centroid latitude (denormalized for bbox queries) */
+    private BigDecimal centerLat;
+
+    /** M4 GIS: polygon centroid longitude (denormalized for bbox queries) */
+    private BigDecimal centerLng;
+
+    /** M4 GIS: GeoJSON Polygon string of orchard boundary */
+    private String boundaryGeojson;
+
+    /** M4 GIS: derived area in mu (亩), computed from boundary on save */
+    private BigDecimal areaMu;
+
     /** Age of trees in years */
     private Integer treeAge;
 

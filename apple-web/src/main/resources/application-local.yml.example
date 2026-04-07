@@ -1,0 +1,12 @@
+# =============================================================================
+# Local development overrides — copy this file to application-local.yml and fill
+# in real values. application-local.yml is gitignored to keep secrets out of git.
+# =============================================================================
+
+# 高德 Web JSAPI (M3 物流追踪 / M4 果园 GIS 地图)
+# Get your own from https://lbs.amap.com/dev/key/app
+amap:
+  web-jsapi-key:    YOUR_AMAP_WEB_JSAPI_KEY_HERE
+  web-jsapi-secret: YOUR_AMAP_WEB_JSAPI_SECRET_HERE
+
+# 其他本地覆盖配置可以加在这里

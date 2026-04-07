@@ -76,6 +76,14 @@ ds:
   callback:
     token: ${DS_CALLBACK_TOKEN:changeme}
 
+# M4/M3 GIS: 高德 Web JSAPI 凭证 — 必须通过环境变量或 application-local.yml 注入
+# 严禁在本文件 hardcode（已加入 .gitignore：application-local.yml）
+amap:
+  web-jsapi-key:    ${AMAP_WEB_JSAPI_KEY:}
+  web-jsapi-secret: ${AMAP_WEB_JSAPI_SECRET:}
+
+spring.config.import: optional:classpath:application-local.yml
+
 logging:
   level:
     com.apple.chain: debug
