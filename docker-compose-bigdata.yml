@@ -301,7 +301,7 @@ services:
       retries: 10
 
   datahub-upgrade:
-    image: acryldata/datahub-upgrade:v0.13.3
+    image: acryldata/datahub-upgrade:v0.15.0
     container_name: apple-datahub-upgrade
     restart: "no"
     profiles: ["governance"]
@@ -334,12 +334,13 @@ services:
       PE_CONSUMER_ENABLED: "false"
       KAFKA_BOOTSTRAP_SERVER: "kafka:9092"
       SCHEMA_REGISTRY_TYPE: "INTERNAL"
+      METADATA_SERVICE_AUTH_ENABLED: "false"
       JAVA_OPTS: "-Xms512m -Xmx1g"
     networks:
       - apple-bigdata-net
 
   datahub-gms:
-    image: acryldata/datahub-gms:v0.13.3
+    image: acryldata/datahub-gms:v0.15.0
     container_name: apple-datahub-gms
     restart: unless-stopped
     profiles: ["governance"]
@@ -371,6 +372,8 @@ services:
       PE_CONSUMER_ENABLED: "false"
       KAFKA_BOOTSTRAP_SERVER: "kafka:9092"
       SCHEMA_REGISTRY_TYPE: "INTERNAL"
+      # v0.15.0 enables auth by default — keep disabled for local dev
+      METADATA_SERVICE_AUTH_ENABLED: "false"
       JAVA_OPTS: "-Xms1g -Xmx2g"
     networks:
       - apple-bigdata-net
@@ -382,7 +385,7 @@ services:
       start_period: 300s
 
   datahub-frontend:
-    image: acryldata/datahub-frontend-react:v0.13.3
+    image: acryldata/datahub-frontend-react:v0.15.0
     container_name: apple-datahub-frontend
     restart: unless-stopped
     profiles: ["governance"]

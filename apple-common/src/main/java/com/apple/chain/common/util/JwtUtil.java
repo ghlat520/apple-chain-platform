@@ -34,7 +34,12 @@ public class JwtUtil {
     @Value("${jwt.secret:apple-chain-platform-jwt-secret-key-must-be-at-least-256-bits}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}")
+    /**
+     * Token TTL in milliseconds. Default 2 hours — short TTL mitigates privilege-persistence
+     * risk since RBAC claims are embedded in the JWT with no server-side revocation check.
+     * For production, consider adding a Redis token blacklist or switching to refresh-token flow.
+     */
+    @Value("${jwt.expiration:7200000}")
     private long expirationMs;
 
     private SecretKey getSigningKey() {

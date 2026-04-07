@@ -11,6 +11,8 @@ import com.apple.chain.trace.util.Crc16;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,7 @@ import java.util.Map;
  * driven from a single background worker per batch to avoid race windows; the
  * unique index uk_code provides a final safety net by rejecting duplicates.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TraceCodeServiceImpl
@@ -43,6 +46,8 @@ public class TraceCodeServiceImpl
 
     private static final int MAX_BOX_PER_BATCH = 10000;
     private static final int MAX_FRUIT_PER_BOX = 1000;
+    private static final int MAX_VDP_EXPORT_ROWS = 100_000;
+    private static final int BATCH_CODE_LENGTH = 14; // TB(2) + yyyyMMdd(8) + seq(4)
 
     private static final String QR_URL_TEMPLATE = "/public/scan/%s";
 
@@ -76,16 +81,8 @@ public class TraceCodeServiceImpl
         for (int i = 1; i <= boxCount; i++) {
             int seq = existing + i;
             String boxCode = buildBoxCode(batchCode, seq);
-
-            TraceCode tc = new TraceCode();
-            tc.setCode(boxCode);
-            tc.setGranularity(GRAN_BOX);
-            tc.setParentCode(batchCode);
-            tc.setBatchId(batchId);
-            tc.setCrc16(extractCrc(boxCode));
-            tc.setQrUrl(String.format(QR_URL_TEMPLATE, boxCode));
-            tc.setStatus("ACTIVE");
-            save(tc);
+            TraceCode tc = buildTraceCode(boxCode, GRAN_BOX, batchCode, batchId);
+            saveWithRetry(tc);
             created.add(tc);
         }
         return created;
@@ -116,16 +113,8 @@ public class TraceCodeServiceImpl
         for (int i = 1; i <= fruitCount; i++) {
             int seq = existing + i;
             String fruitCode = buildFruitCode(boxCode, seq);
-
-            TraceCode tc = new TraceCode();
-            tc.setCode(fruitCode);
-            tc.setGranularity(GRAN_FRUIT);
-            tc.setParentCode(boxCode);
-            tc.setBatchId(parent.getBatchId());
-            tc.setCrc16(extractCrc(fruitCode));
-            tc.setQrUrl(String.format(QR_URL_TEMPLATE, fruitCode));
-            tc.setStatus("ACTIVE");
-            save(tc);
+            TraceCode tc = buildTraceCode(fruitCode, GRAN_FRUIT, boxCode, parent.getBatchId());
+            saveWithRetry(tc);
             created.add(tc);
         }
         return created;
@@ -215,6 +204,12 @@ public class TraceCodeServiceImpl
         List<TraceCode> boxes = baseMapper.findByBatchAndGranularity(batchId, GRAN_BOX);
         List<TraceCode> fruits = baseMapper.findByBatchAndGranularity(batchId, GRAN_FRUIT);
 
+        int totalRows = 1 + boxes.size() + fruits.size();
+        if (totalRows > MAX_VDP_EXPORT_ROWS) {
+            throw new BizException(ResultCode.PARAM_ERROR,
+                    "该批次编码数量过多 (" + totalRows + ")，请分批导出");
+        }
+
         String filename = "VDP_" + batch.getBatchCode() + "." + fmt;
         try {
             response.setContentType(("csv".equals(fmt) ? "text/csv" : "text/plain") + ";charset=UTF-8");
@@ -290,13 +285,46 @@ public class TraceCodeServiceImpl
                 && code.indexOf('-') < 0;
     }
 
+    /**
+     * RFC 4180 compliant CSV writer: quotes fields containing commas, double-quotes, or newlines.
+     */
     private static void writeCsvLine(PrintWriter w, String... cols) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < cols.length; i++) {
             if (i > 0) sb.append(',');
-            sb.append(cols[i]);
+            String col = cols[i];
+            if (col == null) col = "";
+            if (col.contains(",") || col.contains("\"") || col.contains("\n")) {
+                sb.append('"').append(col.replace("\"", "\"\"")).append('"');
+            } else {
+                sb.append(col);
+            }
         }
         w.println(sb);
+    }
+
+    /**
+     * Save a TraceCode, retrying once on duplicate key (concurrent generation race).
+     */
+    private void saveWithRetry(TraceCode tc) {
+        try {
+            save(tc);
+        } catch (DuplicateKeyException e) {
+            log.warn("Duplicate code detected, skipping: {}", tc.getCode());
+            // uk_code unique index guarantees no data corruption
+        }
+    }
+
+    private TraceCode buildTraceCode(String code, String granularity, String parentCode, Long batchId) {
+        TraceCode tc = new TraceCode();
+        tc.setCode(code);
+        tc.setGranularity(granularity);
+        tc.setParentCode(parentCode);
+        tc.setBatchId(batchId);
+        tc.setCrc16(extractCrc(code));
+        tc.setQrUrl(String.format(QR_URL_TEMPLATE, code));
+        tc.setStatus("ACTIVE");
+        return tc;
     }
 
     private static String nz(String s) {

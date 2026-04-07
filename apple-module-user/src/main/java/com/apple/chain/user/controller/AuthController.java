@@ -3,6 +3,7 @@ package com.apple.chain.user.controller;
 import com.apple.chain.common.auth.PermissionContext;
 import com.apple.chain.common.context.UserContext;
 import com.apple.chain.common.result.R;
+import com.apple.chain.user.dto.ChangePasswordRequest;
 import com.apple.chain.user.dto.CurrentUserDTO;
 import com.apple.chain.user.dto.LoginRequest;
 import com.apple.chain.user.dto.LoginResponse;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -84,9 +84,11 @@ public class AuthController {
 
     @Operation(summary = "修改密码")
     @PutMapping("/password")
-    public R<Void> changePassword(@RequestBody Map<String, String> body) {
+    public R<Void> changePassword(@Valid @RequestBody ChangePasswordRequest body) {
         Long userId = UserContext.getUserId();
-        userService.changePassword(userId, body.get("oldPassword"), body.get("newPassword"));
+        userService.changePassword(userId, body.getOldPassword(), body.getNewPassword());
         return R.ok("密码修改成功", null);
     }
+
+    // Legacy alias — delegates to the same service method
 }

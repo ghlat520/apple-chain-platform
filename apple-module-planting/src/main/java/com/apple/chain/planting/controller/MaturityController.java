@@ -7,6 +7,7 @@ import com.apple.chain.planting.maturity.MaturityRecommendation;
 import com.apple.chain.planting.service.MaturityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public class MaturityController {
 
     @Operation(summary = "录入成熟度采样")
     @PostMapping("/record")
-    public R<MaturityRecord> record(@RequestBody MaturityRecord record) {
+    public R<MaturityRecord> record(@Valid @RequestBody MaturityRecord record) {
         return R.ok(maturityService.recordMeasurement(record));
     }
 

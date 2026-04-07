@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -64,20 +65,37 @@ public class RbacServiceImpl implements RbacService {
         }
     }
 
+    /** Roles that only an existing ADMIN can grant to others. */
+    private static final Set<String> PROTECTED_ROLES = Set.of("ADMIN");
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void assignRolesByCode(Long userId, List<String> roleCodes, String grantBy) {
         if (userId == null) {
             throw new BizException("userId 不能为空");
         }
+        // Deduplicate input to prevent double-insert
+        List<String> uniqueCodes = roleCodes == null ? List.of()
+                : roleCodes.stream().distinct().toList();
         userRoleMapper.deleteByUserId(userId);
-        if (roleCodes == null || roleCodes.isEmpty()) {
+        if (uniqueCodes.isEmpty()) {
             return;
         }
         List<SysRole> roles = roleMapper.selectList(
-                new LambdaQueryWrapper<SysRole>().in(SysRole::getRoleCode, roleCodes));
-        if (roles.size() != roleCodes.stream().distinct().count()) {
+                new LambdaQueryWrapper<SysRole>().in(SysRole::getRoleCode, uniqueCodes));
+        if (roles.size() != uniqueCodes.size()) {
             throw new BizException("存在未知的角色编码");
+        }
+        // Prevent non-admin from assigning protected roles (ADMIN)
+        boolean hasProtected = roles.stream()
+                .anyMatch(r -> PROTECTED_ROLES.contains(r.getRoleCode()));
+        if (hasProtected) {
+            List<String> operatorRoles = roleMapper.findByUserId(
+                    com.apple.chain.common.context.UserContext.getUserId())
+                    .stream().map(SysRole::getRoleCode).toList();
+            if (!operatorRoles.contains("ADMIN")) {
+                throw new BizException("仅 ADMIN 可分配 " + PROTECTED_ROLES + " 角色");
+            }
         }
         for (SysRole role : roles) {
             userRoleMapper.insert(userId, role.getId(), grantBy);

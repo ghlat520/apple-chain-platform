@@ -46,49 +46,56 @@ public class RbacInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        // Populate PermissionContext for every authenticated request, even when no
-        // @RequirePerm annotation exists, so service-layer code can call hasPermission().
-        Claims claims = parseClaims(request);
-        if (claims != null) {
-            Set<String> roles = readStringSet(claims, CLAIM_ROLES);
-            // Backward-compat: legacy tokens carry only roleCode (single string).
-            if (roles.isEmpty()) {
-                String legacyRole = UserContext.getRoleCode();
-                if (StringUtils.hasText(legacyRole)) {
-                    roles = Collections.singleton(legacyRole);
+        try {
+            // Populate PermissionContext for every authenticated request, even when no
+            // @RequirePerm annotation exists, so service-layer code can call hasPermission().
+            Claims claims = parseClaims(request);
+            if (claims != null) {
+                Set<String> roles = readStringSet(claims, CLAIM_ROLES);
+                // Backward-compat: legacy tokens carry only roleCode (single string).
+                if (roles.isEmpty()) {
+                    String legacyRole = UserContext.getRoleCode();
+                    if (StringUtils.hasText(legacyRole)) {
+                        roles = Collections.singleton(legacyRole);
+                    }
                 }
+                Set<String> perms = readStringSet(claims, CLAIM_PERMS);
+                PermissionContext.set(roles, perms);
             }
-            Set<String> perms = readStringSet(claims, CLAIM_PERMS);
-            PermissionContext.set(roles, perms);
-        }
 
-        if (!(handler instanceof HandlerMethod handlerMethod)) {
+            if (!(handler instanceof HandlerMethod handlerMethod)) {
+                return true;
+            }
+
+            RequirePerm annotation = handlerMethod.getMethodAnnotation(RequirePerm.class);
+            if (annotation == null) {
+                annotation = handlerMethod.getBeanType().getAnnotation(RequirePerm.class);
+            }
+            if (annotation == null) {
+                return true;
+            }
+
+            String[] required = annotation.value();
+            if (required == null || required.length == 0) {
+                return true;
+            }
+
+            boolean granted = annotation.logical() == RequirePerm.Logical.AND
+                    ? Arrays.stream(required).allMatch(PermissionContext::hasPermission)
+                    : Arrays.stream(required).anyMatch(PermissionContext::hasPermission);
+
+            if (!granted) {
+                log.warn("RBAC deny user={} uri={} required={}",
+                        UserContext.getUsername(), request.getRequestURI(), Arrays.toString(required));
+                throw new ForbiddenException("权限不足: 需要 " + String.join(",", required));
+            }
             return true;
+        } catch (ForbiddenException e) {
+            throw e;
+        } catch (Exception e) {
+            PermissionContext.clear();
+            throw e;
         }
-
-        RequirePerm annotation = handlerMethod.getMethodAnnotation(RequirePerm.class);
-        if (annotation == null) {
-            annotation = handlerMethod.getBeanType().getAnnotation(RequirePerm.class);
-        }
-        if (annotation == null) {
-            return true;
-        }
-
-        String[] required = annotation.value();
-        if (required == null || required.length == 0) {
-            return true;
-        }
-
-        boolean granted = annotation.logical() == RequirePerm.Logical.AND
-                ? Arrays.stream(required).allMatch(PermissionContext::hasPermission)
-                : Arrays.stream(required).anyMatch(PermissionContext::hasPermission);
-
-        if (!granted) {
-            log.warn("RBAC deny user={} uri={} required={}",
-                    UserContext.getUsername(), request.getRequestURI(), Arrays.toString(required));
-            throw new ForbiddenException("权限不足: 需要 " + String.join(",", required));
-        }
-        return true;
     }
 
     @Override

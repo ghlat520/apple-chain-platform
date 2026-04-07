@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -36,6 +37,14 @@ public class MaturityServiceImpl implements MaturityService {
         if (record.getBrix() == null || record.getFirmness() == null
                 || record.getColorRgb() == null || record.getAccumulateTemp() == null) {
             throw new BizException(ResultCode.PARAM_ERROR, "糖度/硬度/色泽/积温四项为必填项");
+        }
+
+        // Physical range validation
+        validateBrix(record.getBrix());
+        validateFirmness(record.getFirmness());
+        validateColorRgb(record.getColorRgb());
+        if (record.getAccumulateTemp() < 0) {
+            throw new BizException(ResultCode.PARAM_ERROR, "积温不能为负数");
         }
 
         MaturityStandard standard = findStandard(record.getVariety());
@@ -82,6 +91,24 @@ public class MaturityServiceImpl implements MaturityService {
     }
 
     // ─── helpers ──────────────────────────────────────────────────────────────
+
+    private void validateBrix(BigDecimal brix) {
+        if (brix.compareTo(BigDecimal.ZERO) <= 0 || brix.compareTo(new BigDecimal("30")) > 0) {
+            throw new BizException(ResultCode.PARAM_ERROR, "糖度值超出合理范围(0-30)");
+        }
+    }
+
+    private void validateFirmness(BigDecimal firmness) {
+        if (firmness.compareTo(BigDecimal.ZERO) <= 0 || firmness.compareTo(new BigDecimal("20")) > 0) {
+            throw new BizException(ResultCode.PARAM_ERROR, "硬度值超出合理范围(0-20)");
+        }
+    }
+
+    private void validateColorRgb(String colorRgb) {
+        if (!colorRgb.matches("^[0-9A-Fa-f]{6}$")) {
+            throw new BizException(ResultCode.PARAM_ERROR, "色泽格式应为6位十六进制(如C8281E)");
+        }
+    }
 
     private MaturityStandard findStandard(String variety) {
         MaturityStandard standard = standardMapper.selectOne(
