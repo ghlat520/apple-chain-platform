@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 /**
  * Agricultural input supplier (农资供应商).
  * Table: agri_supplier
@@ -38,8 +40,17 @@ public class AgriSupplier extends BaseEntity {
     /** 信用评分 1-100 */
     private Integer creditScore;
 
-    /** ACTIVE/SUSPENDED/BLACKLISTED */
+    /** PENDING/APPROVED/REJECTED/BLACKLISTED */
     private String status;
+
+    /** 审核时间 */
+    private LocalDateTime auditTime;
+
+    /** 审核人 */
+    private String auditor;
+
+    /** 拒绝原因 */
+    private String rejectReason;
 
     private String remark;
 }

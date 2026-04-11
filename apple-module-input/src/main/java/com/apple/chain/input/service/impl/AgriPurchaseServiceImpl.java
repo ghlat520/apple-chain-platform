@@ -2,7 +2,9 @@ package com.apple.chain.input.service.impl;
 
 import com.apple.chain.common.exception.BizException;
 import com.apple.chain.common.result.ResultCode;
+import com.apple.chain.input.entity.AgriInventory;
 import com.apple.chain.input.entity.AgriPurchase;
+import com.apple.chain.input.mapper.AgriInventoryMapper;
 import com.apple.chain.input.mapper.AgriPurchaseMapper;
 import com.apple.chain.input.service.AgriPurchaseService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -23,6 +26,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AgriPurchaseServiceImpl extends ServiceImpl<AgriPurchaseMapper, AgriPurchase> implements AgriPurchaseService {
+
+    private final AgriInventoryMapper agriInventoryMapper;
 
     @Override
     public IPage<AgriPurchase> listPurchases(int page, int size, String keyword, String status, Long farmerId) {
@@ -46,9 +51,80 @@ public class AgriPurchaseServiceImpl extends ServiceImpl<AgriPurchaseMapper, Agr
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AgriPurchase createPurchase(AgriPurchase purchase) {
+        if (purchase.getTotalAmount() == null
+                && purchase.getQuantity() != null && purchase.getUnitPrice() != null) {
+            purchase.setTotalAmount(purchase.getQuantity().multiply(purchase.getUnitPrice()));
+        }
         purchase.setStatus("PENDING");
         save(purchase);
         return purchase;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AgriPurchase approvePurchase(Long id) {
+        AgriPurchase purchase = getDetail(id);
+        if (!"PENDING".equals(purchase.getStatus())) {
+            throw new BizException("只有待审核的采购单可以审批");
+        }
+        purchase.setStatus("APPROVED");
+        updateById(purchase);
+        return getById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AgriPurchase receivePurchase(Long id) {
+        AgriPurchase purchase = getDetail(id);
+        if (!"APPROVED".equals(purchase.getStatus())) {
+            throw new BizException("只有已审批的采购单可以确认收货");
+        }
+        purchase.setStatus("RECEIVED");
+        updateById(purchase);
+
+        // auto-increment inventory
+        if (purchase.getProductId() != null && purchase.getQuantity() != null) {
+            AgriInventory inventory = agriInventoryMapper.selectOne(
+                    new LambdaQueryWrapper<AgriInventory>()
+                            .eq(AgriInventory::getProductId, purchase.getProductId())
+                            .last("LIMIT 1"));
+            if (inventory != null) {
+                BigDecimal newStock = inventory.getStockQuantity() == null
+                        ? purchase.getQuantity()
+                        : inventory.getStockQuantity().add(purchase.getQuantity());
+                inventory.setStockQuantity(newStock);
+                inventory.setStatus(calculateInventoryStatus(inventory));
+                agriInventoryMapper.updateById(inventory);
+            }
+        }
+        return getById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AgriPurchase cancelPurchase(Long id) {
+        AgriPurchase purchase = getDetail(id);
+        if (!"PENDING".equals(purchase.getStatus())) {
+            throw new BizException("只有待审核的采购单可以取消");
+        }
+        purchase.setStatus("CANCELLED");
+        updateById(purchase);
+        return getById(id);
+    }
+
+    private String calculateInventoryStatus(AgriInventory inventory) {
+        if (inventory.getStockQuantity() == null || inventory.getStockQuantity().signum() <= 0) {
+            return "EMPTY";
+        }
+        if (inventory.getMaxLevel() != null
+                && inventory.getStockQuantity().compareTo(inventory.getMaxLevel()) > 0) {
+            return "OVERSTOCKED";
+        }
+        if (inventory.getWarningLevel() != null
+                && inventory.getStockQuantity().compareTo(inventory.getWarningLevel()) <= 0) {
+            return "LOW";
+        }
+        return "NORMAL";
     }
 
     @Override

@@ -1,7 +1,9 @@
 package com.apple.chain.coldchain.service.impl;
 
 import com.apple.chain.coldchain.entity.TransportTask;
+import com.apple.chain.coldchain.entity.Vehicle;
 import com.apple.chain.coldchain.mapper.TransportTaskMapper;
+import com.apple.chain.coldchain.mapper.VehicleMapper;
 import com.apple.chain.coldchain.service.TransportTaskService;
 import com.apple.chain.common.exception.BizException;
 import com.apple.chain.common.result.ResultCode;
@@ -28,6 +30,8 @@ import java.util.List;
 public class TransportTaskServiceImpl extends ServiceImpl<TransportTaskMapper, TransportTask> implements TransportTaskService {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+    private final VehicleMapper vehicleMapper;
 
     @Override
     public IPage<TransportTask> listTasks(int page, int size, String keyword, String status) {
@@ -95,6 +99,13 @@ public class TransportTaskServiceImpl extends ServiceImpl<TransportTaskMapper, T
         update.setStatus("IN_TRANSIT");
         update.setActualDepart(LocalDateTime.now());
         updateById(update);
+        // update vehicle status to IN_TRANSIT
+        if (task.getVehicleId() != null) {
+            Vehicle vUpdate = new Vehicle();
+            vUpdate.setId(task.getVehicleId());
+            vUpdate.setStatus("IN_TRANSIT");
+            vehicleMapper.updateById(vUpdate);
+        }
         return getById(id);
     }
 
@@ -109,6 +120,27 @@ public class TransportTaskServiceImpl extends ServiceImpl<TransportTaskMapper, T
         update.setId(id);
         update.setStatus("DELIVERED");
         update.setActualArrive(LocalDateTime.now());
+        updateById(update);
+        // update vehicle status back to IDLE
+        if (task.getVehicleId() != null) {
+            Vehicle vUpdate = new Vehicle();
+            vUpdate.setId(task.getVehicleId());
+            vUpdate.setStatus("IDLE");
+            vehicleMapper.updateById(vUpdate);
+        }
+        return getById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TransportTask cancelTask(Long id) {
+        TransportTask task = getTaskDetail(id);
+        if (!"PENDING".equals(task.getStatus())) {
+            throw new BizException("只有待发车的任务可以取消");
+        }
+        TransportTask update = new TransportTask();
+        update.setId(id);
+        update.setStatus("CANCELLED");
         updateById(update);
         return getById(id);
     }

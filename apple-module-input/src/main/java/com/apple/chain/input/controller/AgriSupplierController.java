@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * Agricultural input supplier endpoints.
  */
@@ -54,6 +56,20 @@ public class AgriSupplierController {
     public R<Void> delete(@PathVariable Long id) {
         agriSupplierService.deleteSupplier(id);
         return R.ok("删除成功", null);
+    }
+
+    @Operation(summary = "审核供应商 (decision: APPROVE/REJECT/BLACKLIST)")
+    @PutMapping("/{id}/audit")
+    public R<AgriSupplier> audit(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String decision = body.get("decision");
+        String reason = body.get("reason");
+        return R.ok(agriSupplierService.auditSupplier(id, decision, reason));
+    }
+
+    @Operation(summary = "重新提交审核（REJECTED→PENDING）")
+    @PutMapping("/{id}/reinstate")
+    public R<AgriSupplier> reinstate(@PathVariable Long id) {
+        return R.ok(agriSupplierService.reinstateSupplier(id));
     }
 
     @Operation(summary = "导出供应商CSV")

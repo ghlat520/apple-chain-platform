@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -78,6 +79,25 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
             throw new BizException("运输中的车辆不能删除");
         }
         removeById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Vehicle changeStatus(Long id, String newStatus) {
+        Vehicle vehicle = getVehicleDetail(id);
+        String current = vehicle.getStatus();
+        // Allowed transitions: IDLE↔MAINTENANCE, IDLE→RETIRED
+        boolean allowed = ("IDLE".equals(current) && "MAINTENANCE".equals(newStatus))
+                || ("MAINTENANCE".equals(current) && "IDLE".equals(newStatus))
+                || ("IDLE".equals(current) && "RETIRED".equals(newStatus));
+        if (!allowed) {
+            throw new BizException("不支持的状态变更: " + current + " → " + newStatus);
+        }
+        Vehicle update = new Vehicle();
+        update.setId(id);
+        update.setStatus(newStatus);
+        updateById(update);
+        return getById(id);
     }
 
     @Override

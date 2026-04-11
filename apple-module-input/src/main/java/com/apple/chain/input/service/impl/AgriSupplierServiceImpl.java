@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -45,7 +46,7 @@ public class AgriSupplierServiceImpl extends ServiceImpl<AgriSupplierMapper, Agr
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AgriSupplier createSupplier(AgriSupplier supplier) {
-        supplier.setStatus("ACTIVE");
+        supplier.setStatus("PENDING");
         save(supplier);
         return supplier;
     }
@@ -64,6 +65,39 @@ public class AgriSupplierServiceImpl extends ServiceImpl<AgriSupplierMapper, Agr
     public void deleteSupplier(Long id) {
         getDetail(id);
         removeById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AgriSupplier auditSupplier(Long id, String decision, String reason) {
+        AgriSupplier supplier = getDetail(id);
+        String newStatus;
+        switch (decision.toUpperCase()) {
+            case "APPROVE" -> newStatus = "APPROVED";
+            case "REJECT" -> {
+                newStatus = "REJECTED";
+                supplier.setRejectReason(reason);
+            }
+            case "BLACKLIST" -> newStatus = "BLACKLISTED";
+            default -> throw new BizException("无效的审核决策: " + decision);
+        }
+        supplier.setStatus(newStatus);
+        supplier.setAuditTime(LocalDateTime.now());
+        updateById(supplier);
+        return getById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AgriSupplier reinstateSupplier(Long id) {
+        AgriSupplier supplier = getDetail(id);
+        if (!"REJECTED".equals(supplier.getStatus())) {
+            throw new BizException("只有已拒绝的供应商可以重新提交审核");
+        }
+        supplier.setStatus("PENDING");
+        supplier.setRejectReason(null);
+        updateById(supplier);
+        return getById(id);
     }
 
     @Override

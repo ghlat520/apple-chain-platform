@@ -4,11 +4,14 @@ import com.apple.chain.common.result.PageResult;
 import com.apple.chain.common.result.R;
 import com.apple.chain.finance.entity.Loan;
 import com.apple.chain.finance.service.LoanService;
+import com.apple.chain.finance.service.LoanWorkflowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
 
 @Tag(name = "贷款管理")
 @RestController
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class LoanController {
 
     private final LoanService loanService;
+    private final LoanWorkflowService loanWorkflowService;
 
     @Operation(summary = "贷款列表（分页）")
     @GetMapping("/list")
@@ -54,6 +58,43 @@ public class LoanController {
     @Operation(summary = "删除贷款")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) { loanService.deleteLoan(id); return R.ok("删除成功", null); }
+
+    @Operation(summary = "申请种植贷款")
+    @PostMapping("/apply/plant")
+    public R<Loan> applyPlant(@RequestBody Loan loan) { return R.ok(loanService.applyPlantLoan(loan)); }
+
+    @Operation(summary = "申请仓单贷款")
+    @PostMapping("/apply/warehouse")
+    public R<Loan> applyWarehouse(@RequestBody Loan loan) { return R.ok(loanService.applyWarehouseLoan(loan)); }
+
+    @Operation(summary = "申请贸易贷款")
+    @PostMapping("/apply/trade")
+    public R<Loan> applyTrade(@RequestBody Loan loan) { return R.ok(loanService.applyTradeLoan(loan)); }
+
+    @Operation(summary = "申请出口贷款")
+    @PostMapping("/apply/export")
+    public R<Loan> applyExport(@RequestBody Loan loan) { return R.ok(loanService.applyExportLoan(loan)); }
+
+    @Operation(summary = "还款")
+    @PostMapping("/{id}/repay")
+    public R<Loan> repay(@PathVariable Long id, @RequestParam BigDecimal amount) {
+        return R.ok(loanService.repay(id, amount));
+    }
+
+    @Operation(summary = "结清贷款")
+    @PostMapping("/{id}/settle")
+    public R<Loan> settle(@PathVariable Long id) { return R.ok(loanService.settle(id)); }
+
+    @Operation(summary = "标记逾期")
+    @PostMapping("/{id}/overdue")
+    public R<Loan> markOverdue(@PathVariable Long id) { return R.ok(loanService.markOverdue(id)); }
+
+    @Operation(summary = "贷款工作流（合同+发票+支付）")
+    @PostMapping("/{id}/process-workflow")
+    public R<Void> processWorkflow(@PathVariable Long id) {
+        loanWorkflowService.processLoanWithContract(id);
+        return R.ok("工作流处理成功", null);
+    }
 
     @Operation(summary = "导出贷款CSV")
     @GetMapping("/export")

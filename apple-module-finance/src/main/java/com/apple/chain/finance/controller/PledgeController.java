@@ -46,6 +46,10 @@ public class PledgeController {
     @PostMapping("/{id}/release")
     public R<Pledge> release(@PathVariable Long id) { return R.ok(pledgeService.release(id)); }
 
+    @Operation(summary = "标记质押违约")
+    @PostMapping("/{id}/default")
+    public R<Pledge> markDefault(@PathVariable Long id) { return R.ok(pledgeService.markDefault(id)); }
+
     @Operation(summary = "删除质押")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) { pledgeService.deletePledge(id); return R.ok("删除成功", null); }

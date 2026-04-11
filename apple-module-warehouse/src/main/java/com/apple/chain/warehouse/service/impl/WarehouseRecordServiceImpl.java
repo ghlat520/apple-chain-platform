@@ -70,7 +70,6 @@ public class WarehouseRecordServiceImpl extends ServiceImpl<WarehouseRecordMappe
         BigDecimal currentUsed = warehouse.getUsedCapacity() != null ? warehouse.getUsedCapacity() : BigDecimal.ZERO;
 
         if ("INBOUND".equals(record.getRecordType())) {
-            // Check capacity
             BigDecimal newUsed = currentUsed.add(quantityInTons);
             if (warehouse.getCapacity() != null && newUsed.compareTo(warehouse.getCapacity()) > 0) {
                 throw new BizException("仓库容量不足，剩余容量: " +
@@ -79,15 +78,31 @@ public class WarehouseRecordServiceImpl extends ServiceImpl<WarehouseRecordMappe
             Warehouse update = new Warehouse();
             update.setId(warehouse.getId());
             update.setUsedCapacity(newUsed);
+            // Auto-set FULL when capacity reached
+            if (warehouse.getCapacity() != null && newUsed.compareTo(warehouse.getCapacity()) >= 0) {
+                update.setStatus("FULL");
+            }
             warehouseService.updateById(update);
+
+            // IoT mock: generate temperature/humidity if not provided
+            if (record.getTemperature() == null) {
+                record.setTemperature(mockTemperature(warehouse.getType()));
+            }
+            if (record.getHumidity() == null) {
+                record.setHumidity(mockHumidity());
+            }
         } else if ("OUTBOUND".equals(record.getRecordType())) {
-            // Check stock
             if (currentUsed.compareTo(quantityInTons) < 0) {
                 throw new BizException("库存不足，当前库存: " + currentUsed + " 吨");
             }
+            BigDecimal newUsed = currentUsed.subtract(quantityInTons);
             Warehouse update = new Warehouse();
             update.setId(warehouse.getId());
-            update.setUsedCapacity(currentUsed.subtract(quantityInTons));
+            update.setUsedCapacity(newUsed);
+            // Auto-reset from FULL to ACTIVE when stock decreases
+            if ("FULL".equals(warehouse.getStatus()) && newUsed.compareTo(warehouse.getCapacity()) < 0) {
+                update.setStatus("ACTIVE");
+            }
             warehouseService.updateById(update);
         } else {
             throw new BizException("无效的记录类型，必须为 INBOUND 或 OUTBOUND");
@@ -106,6 +121,20 @@ public class WarehouseRecordServiceImpl extends ServiceImpl<WarehouseRecordMappe
     public void deleteRecord(Long id) {
         WarehouseRecord record = getRecordDetail(id);
         removeById(id);
+    }
+
+    private static final java.util.concurrent.ThreadLocalRandom RNG = java.util.concurrent.ThreadLocalRandom.current();
+
+    private BigDecimal mockTemperature(String warehouseType) {
+        return switch (warehouseType != null ? warehouseType : "NORMAL") {
+            case "COLD" -> BigDecimal.valueOf(-2.0 + RNG.nextDouble(6.0)).setScale(1, RoundingMode.HALF_UP);
+            case "ATMOSPHERE" -> BigDecimal.valueOf(RNG.nextDouble(2.5)).setScale(1, RoundingMode.HALF_UP);
+            default -> BigDecimal.valueOf(10.0 + RNG.nextDouble(15.0)).setScale(1, RoundingMode.HALF_UP);
+        };
+    }
+
+    private BigDecimal mockHumidity() {
+        return BigDecimal.valueOf(60.0 + RNG.nextDouble(35.0)).setScale(1, RoundingMode.HALF_UP);
     }
 
     @Override

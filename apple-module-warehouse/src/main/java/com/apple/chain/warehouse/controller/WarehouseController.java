@@ -10,6 +10,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Warehouse management endpoints.
  */
@@ -20,6 +23,18 @@ import org.springframework.web.bind.annotation.*;
 public class WarehouseController {
 
     private final WarehouseService warehouseService;
+
+    @Operation(summary = "仓库预警列表")
+    @GetMapping("/alerts")
+    public R<List<Warehouse>> alerts() {
+        return R.ok(warehouseService.listAlerts());
+    }
+
+    @Operation(summary = "变更仓库状态")
+    @PutMapping("/{id}/status")
+    public R<Warehouse> changeStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return R.ok(warehouseService.changeStatus(id, body.get("status")));
+    }
 
     @Operation(summary = "仓库列表（分页）")
     @GetMapping("/list")

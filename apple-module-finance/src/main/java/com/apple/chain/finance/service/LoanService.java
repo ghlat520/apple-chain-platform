@@ -15,4 +15,11 @@ public interface LoanService extends IService<Loan> {
     Loan disburse(Long id);
     void deleteLoan(Long id);
     void exportLoans(String keyword, String loanType, String status, HttpServletResponse response);
+    Loan applyPlantLoan(Loan loan);
+    Loan applyWarehouseLoan(Loan loan);
+    Loan applyTradeLoan(Loan loan);
+    Loan applyExportLoan(Loan loan);
+    Loan repay(Long id, java.math.BigDecimal amount);
+    Loan settle(Long id);
+    Loan markOverdue(Long id);
 }

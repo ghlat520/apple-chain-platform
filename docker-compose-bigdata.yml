@@ -321,7 +321,7 @@ services:
       EBEAN_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
       ELASTICSEARCH_HOST: datahub-elasticsearch
       ELASTICSEARCH_PORT: "9200"
-      GRAPH_SERVICE_IMPL: neo4j
+      GRAPH_SERVICE_IMPL: elasticsearch
       NEO4J_HOST: http://datahub-neo4j:7474
       NEO4J_URI: bolt://datahub-neo4j
       NEO4J_USERNAME: neo4j
@@ -361,7 +361,8 @@ services:
       EBEAN_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
       ELASTICSEARCH_HOST: datahub-elasticsearch
       ELASTICSEARCH_PORT: "9200"
-      GRAPH_SERVICE_IMPL: neo4j
+      # v0.15.0: Neo4j graph service removed, use elasticsearch
+      GRAPH_SERVICE_IMPL: elasticsearch
       NEO4J_HOST: http://datahub-neo4j:7474
       NEO4J_URI: bolt://datahub-neo4j
       NEO4J_USERNAME: neo4j
@@ -372,6 +373,7 @@ services:
       PE_CONSUMER_ENABLED: "false"
       KAFKA_BOOTSTRAP_SERVER: "kafka:9092"
       SCHEMA_REGISTRY_TYPE: "INTERNAL"
+      KAFKA_SCHEMAREGISTRY_URL: "http://localhost:8080/schema-registry/api/"
       # v0.15.0 enables auth by default — keep disabled for local dev
       METADATA_SERVICE_AUTH_ENABLED: "false"
       JAVA_OPTS: "-Xms1g -Xmx2g"

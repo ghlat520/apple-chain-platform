@@ -54,6 +54,12 @@ public class VehicleController {
         return R.ok("删除成功", null);
     }
 
+    @Operation(summary = "变更车辆状态")
+    @PutMapping("/{id}/status")
+    public R<Vehicle> changeStatus(@PathVariable Long id, @RequestParam String newStatus) {
+        return R.ok(vehicleService.changeStatus(id, newStatus));
+    }
+
     @Operation(summary = "导出车辆CSV")
     @GetMapping("/export")
     public void export(

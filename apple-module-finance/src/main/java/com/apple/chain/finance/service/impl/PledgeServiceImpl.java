@@ -53,6 +53,9 @@ public class PledgeServiceImpl extends ServiceImpl<PledgeMapper, Pledge> impleme
         int seq = baseMapper.nextSeq(prefix);
         pledge.setPledgeCode(String.format("PL%s%04d", prefix, seq));
         pledge.setStatus("PENDING");
+        if (pledge.getAppraisedValue() != null && pledge.getPledgeRate() != null) {
+            pledge.setLoanAmount(pledge.getAppraisedValue().multiply(pledge.getPledgeRate()));
+        }
         save(pledge);
         return pledge;
     }
@@ -100,6 +103,18 @@ public class PledgeServiceImpl extends ServiceImpl<PledgeMapper, Pledge> impleme
         Pledge pledge = getPledgeDetail(id);
         if ("ACTIVE".equals(pledge.getStatus())) throw new BizException("生效中的质押不能删除");
         removeById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pledge markDefault(Long id) {
+        Pledge pledge = getPledgeDetail(id);
+        if (!"ACTIVE".equals(pledge.getStatus())) throw new BizException("只有生效中的质押可以标记为违约");
+        Pledge update = new Pledge();
+        update.setId(id);
+        update.setStatus("DEFAULTED");
+        updateById(update);
+        return getById(id);
     }
 
     @Override

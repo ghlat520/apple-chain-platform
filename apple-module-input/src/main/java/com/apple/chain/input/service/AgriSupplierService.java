@@ -21,4 +21,8 @@ public interface AgriSupplierService extends IService<AgriSupplier> {
     void deleteSupplier(Long id);
 
     void exportSuppliers(String keyword, String status, HttpServletResponse response);
+
+    AgriSupplier auditSupplier(Long id, String decision, String reason);
+
+    AgriSupplier reinstateSupplier(Long id);
 }

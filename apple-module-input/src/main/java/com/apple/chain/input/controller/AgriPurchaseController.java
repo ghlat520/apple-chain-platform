@@ -57,6 +57,24 @@ public class AgriPurchaseController {
         return R.ok("删除成功", null);
     }
 
+    @Operation(summary = "审批采购单（PENDING→APPROVED）")
+    @PutMapping("/{id}/approve")
+    public R<AgriPurchase> approve(@PathVariable Long id) {
+        return R.ok(agriPurchaseService.approvePurchase(id));
+    }
+
+    @Operation(summary = "确认收货（APPROVED→RECEIVED，自动更新库存）")
+    @PutMapping("/{id}/receive")
+    public R<AgriPurchase> receive(@PathVariable Long id) {
+        return R.ok(agriPurchaseService.receivePurchase(id));
+    }
+
+    @Operation(summary = "取消采购单（PENDING→CANCELLED）")
+    @PutMapping("/{id}/cancel")
+    public R<AgriPurchase> cancel(@PathVariable Long id) {
+        return R.ok(agriPurchaseService.cancelPurchase(id));
+    }
+
     @Operation(summary = "导出采购记录CSV")
     @GetMapping("/export")
     public void export(

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -75,11 +76,33 @@ public class AgriInventoryServiceImpl extends ServiceImpl<AgriInventoryMapper, A
         if (inventory.getStockQuantity().signum() <= 0) {
             return "EMPTY";
         }
+        if (inventory.getMaxLevel() != null
+                && inventory.getStockQuantity().compareTo(inventory.getMaxLevel()) > 0) {
+            return "OVERSTOCKED";
+        }
         if (inventory.getWarningLevel() != null
                 && inventory.getStockQuantity().compareTo(inventory.getWarningLevel()) <= 0) {
             return "LOW";
         }
         return "NORMAL";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AgriInventory adjustStock(Long id, BigDecimal delta, String reason) {
+        AgriInventory inventory = getDetail(id);
+        BigDecimal current = inventory.getStockQuantity() == null ? BigDecimal.ZERO : inventory.getStockQuantity();
+        BigDecimal newStock = current.add(delta);
+        if (newStock.signum() < 0) {
+            throw new BizException("调整后库存不能为负数");
+        }
+        inventory.setStockQuantity(newStock);
+        inventory.setStatus(calculateStatus(inventory));
+        if (reason != null) {
+            inventory.setRemark(reason);
+        }
+        updateById(inventory);
+        return getById(id);
     }
 
     @Override

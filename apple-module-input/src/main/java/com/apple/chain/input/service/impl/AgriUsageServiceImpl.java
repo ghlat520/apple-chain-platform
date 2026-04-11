@@ -2,7 +2,9 @@ package com.apple.chain.input.service.impl;
 
 import com.apple.chain.common.exception.BizException;
 import com.apple.chain.common.result.ResultCode;
+import com.apple.chain.input.entity.AgriInventory;
 import com.apple.chain.input.entity.AgriUsage;
+import com.apple.chain.input.mapper.AgriInventoryMapper;
 import com.apple.chain.input.mapper.AgriUsageMapper;
 import com.apple.chain.input.service.AgriUsageService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -23,6 +26,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AgriUsageServiceImpl extends ServiceImpl<AgriUsageMapper, AgriUsage> implements AgriUsageService {
+
+    private final AgriInventoryMapper agriInventoryMapper;
 
     @Override
     public IPage<AgriUsage> listUsages(int page, int size, String keyword, String method, Long orchardId) {
@@ -47,6 +52,23 @@ public class AgriUsageServiceImpl extends ServiceImpl<AgriUsageMapper, AgriUsage
     @Transactional(rollbackFor = Exception.class)
     public AgriUsage createUsage(AgriUsage usage) {
         save(usage);
+        // deduct inventory
+        if (usage.getProductId() != null && usage.getQuantity() != null) {
+            AgriInventory inventory = agriInventoryMapper.selectOne(
+                    new LambdaQueryWrapper<AgriInventory>()
+                            .eq(AgriInventory::getProductId, usage.getProductId())
+                            .last("LIMIT 1"));
+            if (inventory != null) {
+                BigDecimal current = inventory.getStockQuantity() == null ? BigDecimal.ZERO : inventory.getStockQuantity();
+                BigDecimal newStock = current.subtract(usage.getQuantity());
+                if (newStock.signum() < 0) {
+                    throw new BizException("库存不足，当前库存: " + current + " " + inventory.getUnit());
+                }
+                inventory.setStockQuantity(newStock);
+                inventory.setStatus(calcInventoryStatus(inventory));
+                agriInventoryMapper.updateById(inventory);
+            }
+        }
         return usage;
     }
 
@@ -62,8 +84,36 @@ public class AgriUsageServiceImpl extends ServiceImpl<AgriUsageMapper, AgriUsage
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteUsage(Long id) {
-        getDetail(id);
+        AgriUsage usage = getDetail(id);
         removeById(id);
+        // restore inventory
+        if (usage.getProductId() != null && usage.getQuantity() != null) {
+            AgriInventory inventory = agriInventoryMapper.selectOne(
+                    new LambdaQueryWrapper<AgriInventory>()
+                            .eq(AgriInventory::getProductId, usage.getProductId())
+                            .last("LIMIT 1"));
+            if (inventory != null) {
+                BigDecimal current = inventory.getStockQuantity() == null ? BigDecimal.ZERO : inventory.getStockQuantity();
+                inventory.setStockQuantity(current.add(usage.getQuantity()));
+                inventory.setStatus(calcInventoryStatus(inventory));
+                agriInventoryMapper.updateById(inventory);
+            }
+        }
+    }
+
+    private String calcInventoryStatus(AgriInventory inventory) {
+        if (inventory.getStockQuantity() == null || inventory.getStockQuantity().signum() <= 0) {
+            return "EMPTY";
+        }
+        if (inventory.getMaxLevel() != null
+                && inventory.getStockQuantity().compareTo(inventory.getMaxLevel()) > 0) {
+            return "OVERSTOCKED";
+        }
+        if (inventory.getWarningLevel() != null
+                && inventory.getStockQuantity().compareTo(inventory.getWarningLevel()) <= 0) {
+            return "LOW";
+        }
+        return "NORMAL";
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -26,4 +27,7 @@ public interface AgriInventoryService extends IService<AgriInventory> {
 
     /** 查询 LOW/EMPTY 预警库存列表 */
     List<AgriInventory> listAlerts();
+
+    /** 调整库存（delta 为正增，负减），记录原因 */
+    AgriInventory adjustStock(Long id, BigDecimal delta, String reason);
 }
