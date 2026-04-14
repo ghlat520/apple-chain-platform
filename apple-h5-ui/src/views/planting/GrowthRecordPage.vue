@@ -55,7 +55,9 @@
           class="page__uploader"
           :max-count="4"
           :max-size="5 * 1024 * 1024"
+          :after-read="onPhotoRead"
           @oversize="onOversize"
+          @delete="onPhotoDelete"
         />
       </van-cell-group>
 
@@ -156,7 +158,9 @@ import {
 } from 'vant';
 import {
   plantingApi,
+  fileApi,
   GROWTH_RECORD_TYPE_LABEL,
+  serializeGrowthRecordPhotoUrls,
   type GrowthRecord,
   type GrowthRecordType,
   type Orchard,
@@ -175,7 +179,16 @@ const form = reactive<GrowthRecord & { location?: string }>({
 
 const orchardDisplay = ref('');
 const recordTypeLabel = ref('');
-const photos = ref<UploaderFileListItem[]>([]);
+/**
+ * Each photo holds the Vant preview URL plus the backend `fileId` / `url` once
+ * the upload completes. We extend UploaderFileListItem with two custom fields so
+ * we can map the final list back to GrowthRecord.photoUrls on submit.
+ */
+interface PhotoItem extends UploaderFileListItem {
+  fileId?: string;
+  backendUrl?: string;
+}
+const photos = ref<PhotoItem[]>([]);
 const submitting = ref(false);
 
 const showOrchardPicker = ref(false);
@@ -248,6 +261,42 @@ function onOversize(): void {
   showToast('单张图片不能超过 5 MB');
 }
 
+/**
+ * Vant's after-read fires once per selected file. We immediately upload to
+ * /api/files/upload and store the returned fileId/url on the uploader item so
+ * submit can emit a structured photoUrls array instead of the legacy
+ * `notes` hack (`[photos]N`).
+ */
+async function onPhotoRead(
+  item: PhotoItem | PhotoItem[]
+): Promise<void> {
+  const items = Array.isArray(item) ? item : [item];
+  await Promise.all(
+    items.map(async (it) => {
+      if (!it.file || it.fileId) return;
+      it.status = 'uploading';
+      it.message = '上传中';
+      try {
+        const res = await fileApi.uploadFile(it.file, {
+          bizType: 'growth-record',
+        });
+        it.fileId = res.fileId;
+        it.backendUrl = res.url;
+        it.status = 'done';
+        it.message = '';
+      } catch {
+        it.status = 'failed';
+        it.message = '上传失败';
+        // request.ts onError already toasted
+      }
+    })
+  );
+}
+
+function onPhotoDelete(): void {
+  // Vant mutates photos.value; nothing else required — photoUrls is derived on submit.
+}
+
 function locate(): void {
   if (!navigator.geolocation) {
     gpsState.value = 'fail';
@@ -274,26 +323,41 @@ async function onSubmit(): Promise<void> {
     showToast('请补全必填项');
     return;
   }
+  // Block submit if any photo is still uploading / failed — forces the user to
+  // either wait or drop the bad item instead of losing it silently.
+  if (photos.value.some((p) => p.status === 'uploading')) {
+    showToast('照片仍在上传，请稍候');
+    return;
+  }
+  if (photos.value.some((p) => p.status === 'failed')) {
+    showToast('有照片上传失败，请删除后重试');
+    return;
+  }
+
   submitting.value = true;
   try {
     const locationText =
       gpsState.value === 'ok'
         ? `${gps.lng.toFixed(6)},${gps.lat.toFixed(6)}`
         : form.location || '';
+    // Collect backend URLs from successfully uploaded photos; serialise as a
+    // JSON array string (matches backend VARCHAR(2000) photo_urls column).
+    const photoUrls = photos.value
+      .map((p) => p.backendUrl)
+      .filter((u): u is string => !!u);
+
     const payload: GrowthRecord = {
       orchardId: form.orchardId,
       recordType: form.recordType,
       operateDate: form.operateDate,
       operator: form.operator,
       weather: form.weather,
-      // notes carries photos count + location until a dedicated file-upload endpoint exists
-      notes: [
-        form.notes,
-        locationText ? `[GPS]${locationText}` : '',
-        photos.value.length ? `[photos]${photos.value.length}` : '',
-      ]
+      // notes now carries only the user's free-text + an optional GPS marker.
+      // Photo tracking moved to the structured `photoUrls` field below.
+      notes: [form.notes, locationText ? `[GPS]${locationText}` : '']
         .filter(Boolean)
         .join(' | '),
+      photoUrls: serializeGrowthRecordPhotoUrls(photoUrls),
     };
     await plantingApi.uploadGrowthRecord(payload);
     showSuccessToast('提交成功');

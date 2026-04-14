@@ -34,5 +34,13 @@ public class GrowthRecord extends BaseEntity {
 
     private String weather;
     private String notes;
+
+    /**
+     * JSON array string of uploaded photo URLs — produced by
+     * apple-module-file upload endpoint, e.g. {@code ["/api/files/ab12","/api/files/cd34"]}.
+     * Nullable; clients may send null or {@code "[]"} when no photos attached.
+     */
+    private String photoUrls;
+
     private Long recordedBy;
 }

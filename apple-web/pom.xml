@@ -69,6 +69,10 @@
             <groupId>com.apple.chain</groupId>
             <artifactId>apple-module-finance-gateway</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.apple.chain</groupId>
+            <artifactId>apple-module-file</artifactId>
+        </dependency>
 
         <!-- Knife4j API docs -->
         <dependency>

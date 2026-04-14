@@ -36,6 +36,11 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
     default-property-inclusion: non_null
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 12MB
 
 mybatis-plus:
   configuration:
@@ -52,6 +57,24 @@ mybatis-plus:
 jwt:
   secret: apple-chain-platform-jwt-secret-key-must-be-at-least-256-bits-long
   expiration: 86400000
+
+# apple-module-file — file upload / download configuration.
+# storage.type=local (dev default) | oss (stub today, wired in apple-module-file/storage/OssFileStorageService)
+apple:
+  file:
+    storage:
+      type: local
+      local:
+        root: ${APPLE_FILE_LOCAL_ROOT:/tmp/apple-chain-files}
+    max-size: 10485760
+    allowed-content-types:
+      - image/jpeg
+      - image/jpg
+      - image/png
+      - image/webp
+      - image/heic
+      - image/heif
+    url-prefix: /api/files
 
 minio:
   endpoint: http://127.0.0.1:9000

@@ -44,6 +44,14 @@ export interface GrowthRecord extends BaseEntity {
   materials?: string;
   weather?: string;
   notes?: string;
+  /**
+   * Photo URL list. Backend column `photo_urls` (VARCHAR 2000) stores a JSON-encoded
+   * array string; the request layer in H5 serialises/deserialises transparently, so
+   * callers may supply either an array (write) or receive a string (read). Use
+   * {@link parseGrowthRecordPhotoUrls} / {@link serializeGrowthRecordPhotoUrls}
+   * in callers that need a single shape.
+   */
+  photoUrls?: string[] | string;
   recordedBy?: number;
 }
 
@@ -61,3 +69,22 @@ export const GROWTH_RECORD_TYPE_LABEL: Record<GrowthRecordType, string> = {
   PRUNE: '修剪',
   PEST_CONTROL: '病虫害防治',
 };
+
+/** Normalise backend `photoUrls` (string or array) into an array. */
+export function parseGrowthRecordPhotoUrls(
+  value: string[] | string | null | undefined
+): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Encode an array for sending to backend — always a JSON array string. */
+export function serializeGrowthRecordPhotoUrls(urls: string[]): string {
+  return JSON.stringify(urls);
+}
