@@ -27,21 +27,33 @@
 set -uo pipefail
 
 # ---------- 配置 ----------
-# apple-chain-platform 两个前端同时扫描
+# apple-chain-platform 三个前端同时扫描
+#   - apple-web-ui   : 移动端 (Vant)
+#   - frontend       : 演示前端 (Vant + Mock)
+#   - apple-admin-ui : PC 管理后台 (Element Plus)
 TARGET_DIRS=(
   "apple-web-ui/src"
   "frontend/src"
+  "apple-admin-ui/src/views"
+  "apple-admin-ui/src/components"
+  "apple-admin-ui/src/layout"
 )
 TARGET_EXTS="ts tsx jsx vue css scss"
 WHITELIST=(
   "design/tokens.js"
   "design/tokens.ts"
   "design/vant-theme.css"
+  "design/element-theme.css"
+  "design/global.css"
   "design/echarts-theme.js"
   "tailwind.config.js"
   "tailwind.config.ts"
   # Styleguide 本身是"展示规范"的元页面，职责就是硬编码演示字号/间距效果
   "views/Styleguide.vue"
+  # apple-admin-ui 存量 SCSS 主题文件 (与 element-theme.css 同级职责)
+  # 后续重构时改走 CSS 变量，目前作为存量冻结
+  "apple-admin-ui/src/styles/variables.scss"
+  "apple-admin-ui/src/styles/index.scss"
 )
 
 # 颜色输出

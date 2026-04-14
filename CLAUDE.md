@@ -32,7 +32,8 @@ apple-chain-platform/
 ├── apple-module-finance-gateway/
 ├── apple-module-bigdata/  # 大数据
 ├── apple-web/             # 聚合启动入口（单体 8080 端口）
-├── apple-web-ui/          # 生产前端（Vue 3 + Vant，RBAC 完整）
+├── apple-web-ui/          # 生产前端 移动端（Vue 3 + Vant，RBAC 完整）
+├── apple-admin-ui/        # PC 管理后台（Vue 3 + Element Plus，管理员/金融机构/监管）
 ├── frontend/              # 演示前端（Vue 3 + Vant，带 Mock 层）
 ├── contract/              # 契约权威源（Markdown 设计文档）
 │   ├── README.md
@@ -77,12 +78,21 @@ mvn -pl apple-web spring-boot:run  # 启动单体
 
 **所有新增前端 UI 代码都必须遵循 `DESIGN.md`。**
 
+### 适用范围（同时管辖三个前端）
+- `apple-web-ui/` — 移动端 Vant，参考 `apple-web-ui/src/design/vant-theme.css`
+- `apple-admin-ui/` — PC 管理后台 Element Plus，参考 `apple-admin-ui/src/design/element-theme.css`
+- `frontend/` — 演示前端 Vant
+
+三者共享同一套 tokens（颜色/间距/字号/字重/圆角/阴影/动效），仅组件库映射层不同。
+
 ### 生成前必读（不可跳过）
 1. Read `./DESIGN.md` — UI 唯一真源（15 段大师版）
-2. Read `./apple-web-ui/src/design/tokens.js` — 可用 token
-3. Read `./apple-web-ui/src/design/vant-theme.css` — CSS 变量和 Vant 主题覆盖
-4. Glob `./apple-web-ui/src/components/**/*.vue` — 优先复用已有组件
-5. 开发新组件前，启动 dev server 访问 `/styleguide` 看色板/字体/组件/状态
+2. Read 对应前端的 `src/design/tokens.js` — 可用 token
+3. Read 对应前端的主题覆盖文件：
+   - 移动端 Vant → `./apple-web-ui/src/design/vant-theme.css`
+   - PC 后台 Element Plus → `./apple-admin-ui/src/design/element-theme.css`
+4. Glob 对应前端的 `src/components/**/*.vue` — 优先复用已有组件
+5. 移动端开发新组件前，启动 dev server 访问 `/styleguide` 看色板/字体/组件/状态
 
 ### Lint 使用模式
 - **日常提交**：`bash scripts/design-lint.sh --staged`（仅扫已 staged 文件，pre-commit）
@@ -143,8 +153,10 @@ mvn -pl apple-web spring-boot:run  # 启动单体
 ### 参考资料
 - 完整规范：`./DESIGN.md`
 - 品牌灵魂：`./docs/design/brand-soul.md`
-- Tokens 代码：`./apple-web-ui/src/design/tokens.js`
+- Tokens 代码（移动端）：`./apple-web-ui/src/design/tokens.js`
+- Tokens 代码（PC 后台）：`./apple-admin-ui/src/design/tokens.js`
 - Vant 主题覆盖：`./apple-web-ui/src/design/vant-theme.css`
+- Element Plus 主题覆盖：`./apple-admin-ui/src/design/element-theme.css`
 - 视觉 QA 页：dev server 后访问 `/styleguide`
 - Lint 脚本：`bash scripts/design-lint.sh`
 - 共享设计库：`/Applications/soft/CodeSpace/design-md-library/`

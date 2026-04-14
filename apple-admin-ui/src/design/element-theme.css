@@ -1,0 +1,195 @@
+/**
+ * apple-chain-platform Element Plus 主题覆盖 (apple-admin-ui)
+ *
+ * 方式：CSS 变量覆盖 Element Plus 2.x 的 --el-* 变量，无需 SCSS 编译。
+ * 导入：在 src/main.js 中 import '@/design/element-theme.css'
+ *      （必须放在 'element-plus/dist/index.css' 之后，才能覆盖默认值）
+ *
+ * 与 apple-web-ui/src/design/vant-theme.css 共享同一套 :root tokens，
+ * 仅组件层映射改为 Element Plus 变量。任何 token 改动必须双端同步。
+ */
+
+/* ==================== 全局 Design Tokens (与 web-ui 对齐) ==================== */
+:root {
+  /* Brand */
+  --color-brand-primary: #D32F2F;
+  --color-brand-hover: #C62828;
+  --color-brand-active: #B71C1C;
+  --color-brand-light: #FFEBEE;
+
+  /* Accent */
+  --color-leaf-green: #43A047;
+  --color-leaf-green-light: #E8F5E9;
+
+  /* Text */
+  --color-text-primary: #2C2E32;
+  --color-text-secondary: #5E6368;
+  --color-text-tertiary: #8A9099;
+  --color-text-disabled: #BDC1C7;
+  --color-text-inverse: #FFFFFF;
+
+  /* Surface */
+  --color-surface-base: #FAFAF8;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-sunken: #F5F5F2;
+
+  /* Border */
+  --color-border-default: rgba(44, 46, 50, 0.08);
+  --color-border-strong: rgba(44, 46, 50, 0.16);
+  --color-divider: rgba(44, 46, 50, 0.06);
+
+  /* Semantic */
+  --color-success: #43A047;
+  --color-success-bg: #E8F5E9;
+  --color-warning: #F57C00;
+  --color-warning-bg: #FFF3E0;
+  --color-error: #D32F2F;
+  --color-error-bg: #FFEBEE;
+  --color-info: #1976D2;
+  --color-info-bg: #E3F2FD;
+
+  /* IoT */
+  --color-temp-normal: #1976D2;
+  --color-temp-warning: #F57C00;
+  --color-temp-critical: #D32F2F;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-base: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* Shadow */
+  --shadow-1: 0 1px 2px rgba(44,46,50,0.04);
+  --shadow-2: 0 4px 12px rgba(44,46,50,0.08);
+  --shadow-3: 0 16px 48px rgba(0,0,0,0.15);
+  --shadow-4: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-focus: 0 0 0 4px rgba(211, 47, 47, 0.15);
+
+  /* Motion */
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+  --motion-slow: 400ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Density —— admin 默认 compact (管理员/金融机构 PC 后台) */
+  --density-button-height: 40px;
+  --density-input-height: 40px;
+  --density-cell-height: 44px;
+  --density-cell-padding-y: 10px;
+  --density-cell-padding-x: 14px;
+
+  /* Typography */
+  --font-body: "PingFang SC", "Source Han Sans SC", "Microsoft YaHei", -apple-system, Inter, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+  --font-size-body: 14px;          /* PC 后台默认 14px (compact) */
+  --line-height-body: 1.6;
+  --font-size-display-l: 28px;
+  --font-size-h1: 22px;
+  --font-size-h2: 18px;
+  --font-size-h3: 16px;
+  --font-size-body-l: 17px;
+  --font-size-body-s: 14px;
+  --font-size-caption: 13px;
+  --font-size-overline: 12px;
+  --font-size-number-l: 24px;
+}
+
+/* ==================== Density 模式切换 ==================== */
+[data-density="spacious"] {
+  --density-button-height: 56px;
+  --density-input-height: 56px;
+  --density-cell-height: 64px;
+  --density-cell-padding-y: 16px;
+  --density-cell-padding-x: 20px;
+  --font-size-body: 18px;
+}
+
+[data-density="comfortable"] {
+  --density-button-height: 48px;
+  --density-input-height: 48px;
+  --density-cell-height: 56px;
+  --density-cell-padding-y: 14px;
+  --density-cell-padding-x: 16px;
+  --font-size-body: 16px;
+}
+
+/* ==================== Element Plus 2.x 变量覆盖 ==================== */
+:root {
+  /* —— 主色：苹果红 —— */
+  --el-color-primary: var(--color-brand-primary);
+  --el-color-primary-light-3: #DC5A5A;
+  --el-color-primary-light-5: #E78585;
+  --el-color-primary-light-7: #F1B0B0;
+  --el-color-primary-light-8: #F6C7C7;
+  --el-color-primary-light-9: var(--color-brand-light);
+  --el-color-primary-dark-2: var(--color-brand-active);
+
+  /* —— 语义色 —— */
+  --el-color-success: var(--color-success);
+  --el-color-success-light-9: var(--color-success-bg);
+  --el-color-warning: var(--color-warning);
+  --el-color-warning-light-9: var(--color-warning-bg);
+  --el-color-danger: var(--color-error);
+  --el-color-danger-light-9: var(--color-error-bg);
+  --el-color-error: var(--color-error);
+  --el-color-error-light-9: var(--color-error-bg);
+  --el-color-info: var(--color-info);
+  --el-color-info-light-9: var(--color-info-bg);
+
+  /* —— 文字 —— */
+  --el-text-color-primary: var(--color-text-primary);
+  --el-text-color-regular: var(--color-text-secondary);
+  --el-text-color-secondary: var(--color-text-tertiary);
+  --el-text-color-placeholder: var(--color-text-tertiary);
+  --el-text-color-disabled: var(--color-text-disabled);
+
+  /* —— 背景 —— */
+  --el-bg-color: var(--color-surface-raised);
+  --el-bg-color-page: var(--color-surface-base);
+  --el-bg-color-overlay: var(--color-surface-overlay, #FFFFFF);
+  --el-fill-color-blank: var(--color-surface-raised);
+  --el-fill-color-light: var(--color-surface-sunken);
+  --el-fill-color-lighter: var(--color-surface-sunken);
+
+  /* —— 边框 —— */
+  --el-border-color: var(--color-border-default);
+  --el-border-color-light: var(--color-border-default);
+  --el-border-color-lighter: var(--color-divider);
+  --el-border-color-extra-light: var(--color-divider);
+  --el-border-color-darker: var(--color-border-strong);
+
+  /* —— 字体 —— */
+  --el-font-family: var(--font-body);
+  --el-font-size-base: var(--font-size-body);
+  --el-font-size-small: var(--font-size-body-s);
+  --el-font-size-extra-small: var(--font-size-caption);
+  --el-font-size-large: var(--font-size-body-l);
+  --el-font-size-extra-large: var(--font-size-h2);
+
+  /* —— 圆角 (温和提升，不极端) —— */
+  --el-border-radius-base: var(--radius-base);   /* 8px */
+  --el-border-radius-small: var(--radius-sm);    /* 4px */
+  --el-border-radius-round: 9999px;
+
+  /* —— 阴影 —— */
+  --el-box-shadow-light: var(--shadow-1);
+  --el-box-shadow: var(--shadow-2);
+  --el-box-shadow-dark: var(--shadow-3);
+
+  /* —— 组件高度 (随 density) —— */
+  --el-component-size: var(--density-button-height);
+  --el-component-size-small: 32px;
+  --el-component-size-large: var(--density-input-height);
+}
