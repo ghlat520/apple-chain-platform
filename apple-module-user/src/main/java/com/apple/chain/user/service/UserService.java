@@ -2,6 +2,7 @@ package com.apple.chain.user.service;
 
 import com.apple.chain.user.dto.LoginRequest;
 import com.apple.chain.user.dto.LoginResponse;
+import com.apple.chain.user.dto.SmsLoginRequest;
 import com.apple.chain.user.entity.User;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -13,6 +14,10 @@ import jakarta.servlet.http.HttpServletResponse;
 public interface UserService extends IService<User> {
 
     LoginResponse login(LoginRequest request);
+
+    void sendSmsCode(String phone);
+
+    LoginResponse smsLogin(SmsLoginRequest request);
 
     User getProfile(Long userId);
 

@@ -2,7 +2,9 @@ package com.apple.chain.planting.service.impl;
 
 import com.apple.chain.common.exception.BizException;
 import com.apple.chain.common.result.ResultCode;
+import com.apple.chain.planting.entity.Farmer;
 import com.apple.chain.planting.entity.Orchard;
+import com.apple.chain.planting.mapper.FarmerMapper;
 import com.apple.chain.planting.mapper.OrchardMapper;
 import com.apple.chain.planting.service.OrchardService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -20,6 +22,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -27,6 +30,7 @@ import java.util.List;
 public class OrchardServiceImpl extends ServiceImpl<OrchardMapper, Orchard> implements OrchardService {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private final FarmerMapper farmerMapper;
 
     @Override
     public IPage<Orchard> listOrchards(int page, int size, String keyword, String status, Long farmerId) {
@@ -119,5 +123,20 @@ public class OrchardServiceImpl extends ServiceImpl<OrchardMapper, Orchard> impl
     private String q(String v) {
         if (v == null) return "";
         return "\"" + v.replace("\"", "\"\"") + "\"";
+    }
+
+    @Override
+    public List<Orchard> listMyOrchards(Long userId) {
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+        Farmer farmer = farmerMapper.selectOne(
+                new LambdaQueryWrapper<Farmer>().eq(Farmer::getUserId, userId));
+        if (farmer == null) {
+            return Collections.emptyList();
+        }
+        return list(new LambdaQueryWrapper<Orchard>()
+                .eq(Orchard::getFarmerId, farmer.getId())
+                .orderByDesc(Orchard::getCreateTime));
     }
 }

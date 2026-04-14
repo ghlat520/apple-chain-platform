@@ -1,5 +1,5 @@
 /**
- * Trace types — mirror apple-module-trace/entity/*.java
+ * Trace types — mirror apple-module-trace entity/VO exactly.
  */
 import type { BaseEntity } from './common';
 
@@ -36,16 +36,32 @@ export const TRACE_STATUS_LABEL: Record<TraceBatchStatus, string> = {
 };
 
 /**
- * Full-chain scan response shape from GET /api/trace/scan/{traceCode}/full
- * Backend returns TraceFullChainVO — keep as loose shape until the VO is read.
+ * TraceFullChainVO.java — returned by GET /api/trace/scan/{traceCode}/full
+ * Fields extracted from com.apple.chain.trace.dto.TraceFullChainVO (1:1 mirror).
  */
 export interface TraceFullChain {
   traceCode?: string;
-  batch?: TraceBatch;
-  nodes?: TraceNode[];
-  [k: string]: unknown;
+  batchNo?: string;
+  variety?: string;
+  currentStatus?: string;
+  /** Planting info */
+  orchardName?: string;
+  farmerName?: string;
+  region?: string;
+  /** Input materials used — each entry is a loose map */
+  inputMaterials?: Record<string, unknown>[];
+  /** Warehouse events */
+  warehouseRecords?: Record<string, unknown>[];
+  /** Trade info */
+  tradeInfo?: Record<string, unknown>;
+  /** Timeline nodes */
+  timeline?: TraceNode[];
+  /** Blockchain verification */
+  chainTxHash?: string;
+  chainStatus?: number;
 }
 
+/** TraceNode.java — @TableName("tr_trace_node") */
 export interface TraceNode {
   id?: number;
   nodeType?: string;
@@ -54,5 +70,4 @@ export interface TraceNode {
   operateTime?: string;
   location?: string;
   remark?: string;
-  [k: string]: unknown;
 }

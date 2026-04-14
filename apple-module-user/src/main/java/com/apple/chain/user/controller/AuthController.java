@@ -7,6 +7,8 @@ import com.apple.chain.user.dto.ChangePasswordRequest;
 import com.apple.chain.user.dto.CurrentUserDTO;
 import com.apple.chain.user.dto.LoginRequest;
 import com.apple.chain.user.dto.LoginResponse;
+import com.apple.chain.user.dto.SmsLoginRequest;
+import com.apple.chain.user.dto.SmsSendRequest;
 import com.apple.chain.user.entity.SysRole;
 import com.apple.chain.user.entity.User;
 import com.apple.chain.user.service.RbacService;
@@ -91,4 +93,17 @@ public class AuthController {
     }
 
     // Legacy alias — delegates to the same service method
+
+    @Operation(summary = "发送短信验证码")
+    @PostMapping("/sms/send")
+    public R<Void> sendSmsCode(@Valid @RequestBody SmsSendRequest request) {
+        userService.sendSmsCode(request.getPhone());
+        return R.ok("验证码已发送", null);
+    }
+
+    @Operation(summary = "短信验证码登录（手机号不存在则自动注册为果农）")
+    @PostMapping("/sms/login")
+    public R<LoginResponse> smsLogin(@Valid @RequestBody SmsLoginRequest request) {
+        return R.ok(userService.smsLogin(request));
+    }
 }

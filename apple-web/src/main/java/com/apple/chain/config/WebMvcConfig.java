@@ -23,6 +23,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/user/auth/login",
+            "/api/user/auth/sms/**",
             "/api/trace/scan/**",
             "/doc.html",
             "/swagger-ui/**",
