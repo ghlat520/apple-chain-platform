@@ -124,7 +124,13 @@ const routes = [
       { path: 'finance/pledges', name: 'Pledges', component: () => import('@/views/finance/Pledges.vue'), meta: { perm: 'finance:read' } },
       { path: 'finance/credits', name: 'Credits', component: () => import('@/views/finance/Credits.vue'), meta: { perm: 'finance:read' } },
       { path: 'finance/risks', name: 'Risks', component: () => import('@/views/finance/Risks.vue'), meta: { perm: 'finance:read' } },
-      { path: 'finance/statistics', name: 'FinanceStats', component: () => import('@/views/finance/Statistics.vue'), meta: { perm: 'finance:read' } }
+      { path: 'finance/statistics', name: 'FinanceStats', component: () => import('@/views/finance/Statistics.vue'), meta: { perm: 'finance:read' } },
+      // ── 风控预警 ──────────────────────────────────────────
+      { path: 'risk/rules', name: 'RiskRules', component: () => import('@/views/finance/risk/Rules.vue'), meta: { perm: 'finance:read' } },
+      { path: 'risk/events', name: 'RiskEvents', component: () => import('@/views/finance/risk/Events.vue'), meta: { perm: 'finance:read' } },
+      // ── 微信支付 Mock (演示原型) ──────────────────────────
+      { path: 'trade/wxpay/payments', name: 'WxPayPayments', component: () => import('@/views/trade/wxpay/Payments.vue'), meta: { perm: 'trade:read' } },
+      { path: 'trade/wxpay/reconcile', name: 'WxPayReconcile', component: () => import('@/views/trade/wxpay/Reconcile.vue'), meta: { perm: 'trade:read' } }
     ]
   }
 ]
