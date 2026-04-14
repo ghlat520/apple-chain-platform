@@ -20,6 +20,7 @@
     <!-- Action Bar -->
     <div class="action-bar">
       <van-button type="primary" size="small" icon="plus" @click="openAddDrawer">新增果园</van-button>
+      <van-button type="default" size="small" icon="location-o" @click="goToMap">地图查看</van-button>
       <van-button type="default" size="small" icon="down" @click="handleExport">导出CSV</van-button>
     </div>
 
@@ -148,8 +149,12 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { farmApi } from '@/api/farm.js'
 import { showToast, showConfirmDialog } from 'vant'
+
+const router = useRouter()
+function goToMap() { router.push('/farm/orchard-map') }
 
 const list = ref([])
 const loading = ref(false)
