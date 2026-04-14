@@ -35,10 +35,17 @@ public class TaskPlanController {
     @Operation(summary = "查询计划列表")
     @GetMapping("/list")
     @RequirePerm("cultivation:read")
-    public R<List<TaskPlan>> list(@RequestParam Long orchardId,
-                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return R.ok(taskPlanService.list(orchardId, from, to));
+    public R<List<TaskPlan>> list(@RequestParam(required = false) Long orchardId,
+                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        // Default: current month if from/to not provided
+        LocalDate f = from != null ? from : LocalDate.now().withDayOfMonth(1);
+        LocalDate t = to != null ? to : LocalDate.now().plusMonths(1).withDayOfMonth(1).minusDays(1);
+        if (orchardId != null) {
+            return R.ok(taskPlanService.list(orchardId, f, t));
+        }
+        // Return empty list when no orchard filter — frontend loads page without pre-selection
+        return R.ok(List.of());
     }
 
     @Operation(summary = "标记完成")

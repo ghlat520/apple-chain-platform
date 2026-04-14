@@ -47,6 +47,14 @@ public class R<T> {
         return new R<>(resultCode.getCode(), resultCode.getMessage(), null);
     }
 
+    /**
+     * Generic failure from any {@link IErrorCode} implementation
+     * (module-specific enums like {@code UserErrorCode}, etc.).
+     */
+    public static <T> R<T> fail(IErrorCode errorCode) {
+        return new R<>(errorCode.getCode(), errorCode.getMessage(), null);
+    }
+
     public boolean isSuccess() {
         return this.code == ResultCode.SUCCESS.getCode();
     }

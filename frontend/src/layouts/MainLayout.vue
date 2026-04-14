@@ -18,7 +18,7 @@
 
     <van-tabbar v-model="activeTab" route fixed>
       <van-tabbar-item to="/dashboard" icon="home-o">首页</van-tabbar-item>
-      <van-tabbar-item to="/orchards" icon="apps-o">果园</van-tabbar-item>
+      <van-tabbar-item to="/modules" icon="apps-o">模块</van-tabbar-item>
       <van-tabbar-item to="/trace" icon="search">溯源</van-tabbar-item>
       <van-tabbar-item to="/trades" icon="bill-o">交易</van-tabbar-item>
       <van-tabbar-item to="/farmers" icon="friends-o">果农</van-tabbar-item>

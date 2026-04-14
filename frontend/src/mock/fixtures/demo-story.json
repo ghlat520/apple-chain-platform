@@ -1,0 +1,576 @@
+{
+  "meta": {
+    "title": "洛川张三果园 红富士全链路演示",
+    "description": "一条苹果从果园到市场的完整溯源链路，14 天压缩时间线，贯通 8 个业务节点",
+    "timeline": "2026-03-25 至 2026-04-08",
+    "version": "1.0.0",
+    "createdAt": "2026-04-12"
+  },
+
+  "orchard": {
+    "list": [
+      {
+        "id": 1001,
+        "name": "张三红富士果园",
+        "farmerId": 1001,
+        "farmerName": "张三",
+        "phone": "13900139001",
+        "location": "陕西省延安市洛川县",
+        "village": "洛川县凤栖镇交口河村",
+        "area": 10,
+        "variety": "红富士",
+        "plantYear": 2019,
+        "treeCount": 330,
+        "status": "ACTIVE",
+        "createdAt": "2026-03-25 08:00:00"
+      }
+    ],
+    "detail": {
+      "id": 1001,
+      "name": "张三红富士果园",
+      "farmerId": 1001,
+      "farmerName": "张三",
+      "phone": "13900139001",
+      "location": "陕西省延安市洛川县",
+      "village": "洛川县凤栖镇交口河村",
+      "lng": 109.43,
+      "lat": 35.76,
+      "area": 10,
+      "variety": "红富士",
+        "plantYear": 2019,
+        "treeCount": 330,
+        "estimatedYield": 6000,
+        "soilType": "黄绵土",
+        "irrigationType": "滴灌",
+        "organicCert": true,
+        "status": "ACTIVE",
+        "createdAt": "2026-03-25 08:00:00"
+    }
+  },
+
+  "planting": {
+    "timeline": [
+      {
+        "id": 1,
+        "orchardId": 1001,
+        "type": "FERTILIZE",
+        "typeName": "施肥",
+        "description": "春季施有机肥，每棵树 10kg 生物菌肥，沟施覆土",
+        "material": "有机生物菌肥 40kg/袋",
+        "quantity": 330,
+        "unit": "kg",
+        "operator": "张三",
+        "operatedAt": "2026-03-26 09:00:00",
+        "weather": "晴 12 C",
+        "remark": "开沟 20cm 深，距树干 60cm 环状沟施"
+      },
+      {
+        "id": 2,
+        "orchardId": 1001,
+        "type": "PRUNE",
+        "typeName": "修剪",
+        "description": "春季复剪，疏除背上枝、重叠枝，改善通风透光",
+        "material": null,
+        "quantity": null,
+        "unit": null,
+        "operator": "张三",
+        "operatedAt": "2026-03-30 08:30:00",
+        "weather": "多云 15 C",
+        "remark": "保留主枝延长头，单轴延伸"
+      },
+      {
+        "id": 3,
+        "orchardId": 1001,
+        "type": "THIN_FLOWER",
+        "typeName": "疏花疏果",
+        "description": "人工疏花，保留中心花，每花序留 1 朵，间隔 20cm",
+        "material": null,
+        "quantity": null,
+        "unit": null,
+        "operator": "张三",
+        "operatedAt": "2026-04-02 07:30:00",
+        "weather": "晴 18 C",
+        "remark": "盛花期第 3 天开始疏花，预计留果 5000 个"
+      }
+    ]
+  },
+
+  "harvest": {
+    "list": [
+      {
+        "id": 2001,
+        "batchCode": "HB20260406001",
+        "orchardId": 1001,
+        "orchardName": "张三红富士果园",
+        "farmerName": "张三",
+        "variety": "红富士",
+        "quantity": 5000,
+        "unit": "kg",
+        "grade": "A",
+        "harvestDate": "2026-04-06",
+        "harvestStartedAt": "2026-04-06 06:30:00",
+        "harvestEndedAt": "2026-04-06 17:00:00",
+        "workers": 4,
+        "sugarDegree": 14.5,
+        "fruitDiameter": "80mm+",
+        "pesticideCheck": "PASS",
+        "pesticideCheckOrg": "洛川县农产品质检站",
+        "status": "COMPLETED",
+        "remark": "手工采摘，套袋果剔除伤果后 5000kg 入库"
+      }
+    ],
+    "detail": {
+      "id": 2001,
+      "batchCode": "HB20260406001",
+      "orchardId": 1001,
+      "orchardName": "张三红富士果园",
+      "farmerName": "张三",
+      "variety": "红富士",
+      "quantity": 5000,
+      "unit": "kg",
+      "grade": "A",
+      "gradeStandard": "果径 80mm 以上，着色面积 85% 以上，无病虫伤",
+      "harvestDate": "2026-04-06",
+      "harvestStartedAt": "2026-04-06 06:30:00",
+      "harvestEndedAt": "2026-04-06 17:00:00",
+      "workers": 4,
+      "sugarDegree": 14.5,
+      "fruitDiameter": "80mm+",
+      "firmness": "9.2 kg/cm2",
+      "pesticideCheck": "PASS",
+      "pesticideCheckOrg": "洛川县农产品质检站",
+      "pesticideCheckNo": "LCJC-2026-0406-018",
+      "status": "COMPLETED",
+      "remark": "手工采摘，套袋果剔除伤果后 5000kg 入库"
+    }
+  },
+
+  "trace": {
+    "batchCode": "TC20260406001",
+    "batch": {
+      "code": "TC20260406001",
+      "level": "BATCH",
+      "harvestBatchId": 2001,
+      "variety": "红富士",
+      "orchardName": "张三红富士果园",
+      "farmerName": "张三",
+      "originLocation": "陕西省延安市洛川县",
+      "quantity": 5000,
+      "unit": "kg",
+      "grade": "A",
+      "harvestDate": "2026-04-06",
+      "generatedAt": "2026-04-06 18:00:00",
+      "status": "ACTIVE",
+      "blockchainHash": "0x3a7f1b9c4e2d8a5f6b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a",
+      "chainedAt": "2026-04-06 18:05:00"
+    },
+    "boxes": [
+      {
+        "code": "BOX-TC20260406001-001",
+        "parentBatchCode": "TC20260406001",
+        "level": "BOX",
+        "quantity": 100,
+        "unit": "kg",
+        "grade": "A",
+        "packagedAt": "2026-04-06 19:30:00",
+        "packOperator": "张三"
+      },
+      {
+        "code": "BOX-TC20260406001-002",
+        "parentBatchCode": "TC20260406001",
+        "level": "BOX",
+        "quantity": 100,
+        "unit": "kg",
+        "grade": "A",
+        "packagedAt": "2026-04-06 19:45:00",
+        "packOperator": "张三"
+      },
+      {
+        "code": "BOX-TC20260406001-003",
+        "parentBatchCode": "TC20260406001",
+        "level": "BOX",
+        "quantity": 100,
+        "unit": "kg",
+        "grade": "A",
+        "packagedAt": "2026-04-06 20:00:00",
+        "packOperator": "张三"
+      }
+    ],
+    "fruits": [
+      {
+        "code": "FR-BOX-001-001",
+        "parentBoxCode": "BOX-TC20260406001-001",
+        "level": "FRUIT",
+        "weight": 0.32,
+        "unit": "kg",
+        "grade": "A",
+        "sugarDegree": 14.8,
+        "pickedAt": "2026-04-06 08:15:00"
+      },
+      {
+        "code": "FR-BOX-001-002",
+        "parentBoxCode": "BOX-TC20260406001-001",
+        "level": "FRUIT",
+        "weight": 0.28,
+        "unit": "kg",
+        "grade": "A",
+        "sugarDegree": 14.2,
+        "pickedAt": "2026-04-06 08:22:00"
+      },
+      {
+        "code": "FR-BOX-002-001",
+        "parentBoxCode": "BOX-TC20260406001-002",
+        "level": "FRUIT",
+        "weight": 0.30,
+        "unit": "kg",
+        "grade": "A",
+        "sugarDegree": 15.1,
+        "pickedAt": "2026-04-06 09:05:00"
+      }
+    ],
+    "fullChain": {
+      "traceCode": "TC20260406001",
+      "steps": [
+        {
+          "step": 1,
+          "nodeName": "果园种植",
+          "location": "陕西省延安市洛川县凤栖镇交口河村",
+          "operator": "张三",
+          "time": "2026-03-25 08:00:00",
+          "detail": "红富士果园注册，10 亩，330 棵果树"
+        },
+        {
+          "step": 2,
+          "nodeName": "农事管理",
+          "location": "陕西省延安市洛川县凤栖镇交口河村",
+          "operator": "张三",
+          "time": "2026-03-26 ~ 2026-04-02",
+          "detail": "施有机肥 330kg、春季修剪、疏花疏果"
+        },
+        {
+          "step": 3,
+          "nodeName": "采收质检",
+          "location": "陕西省延安市洛川县",
+          "operator": "张三",
+          "time": "2026-04-06 06:30:00",
+          "detail": "采收 5000kg A 级红富士，糖度 14.5 度，农残检测合格（LCJC-2026-0406-018）"
+        },
+        {
+          "step": 4,
+          "nodeName": "溯源赋码",
+          "location": "陕西省延安市洛川县",
+          "operator": "系统",
+          "time": "2026-04-06 18:00:00",
+          "detail": "生成三级溯源码 TC20260406001，1 批次 / 50 箱 / 500 果"
+        },
+        {
+          "step": 5,
+          "nodeName": "入库仓储",
+          "location": "陕西省延安市洛川县洛川气调库",
+          "operator": "李仓管",
+          "time": "2026-04-06 20:30:00",
+          "detail": "洛川气调库入库 5000kg，库温 2.0 C，湿度 88%"
+        },
+        {
+          "step": 6,
+          "nodeName": "冷链运输",
+          "location": "洛川 → 西安（全程 280km）",
+          "operator": "马师傅",
+          "time": "2026-04-07 05:00:00 ~ 2026-04-07 09:20:00",
+          "detail": "冷藏车 陕A·12345，全程 2.1 C 恒温，GPS 实时监控"
+        },
+        {
+          "step": 7,
+          "nodeName": "交易配送",
+          "location": "陕西省西安市胡家庙果品批发市场",
+          "operator": "张三",
+          "time": "2026-04-08 10:00:00",
+          "detail": "西安批发市场 2000kg @ 8.5 元/kg，成交 17000 元"
+        }
+      ]
+    }
+  },
+
+  "warehouse": {
+    "list": [
+      {
+        "id": 3001,
+        "warehouseCode": "WH-001",
+        "name": "洛川气调库",
+        "type": "ATMOSPHERE",
+        "typeName": "气调库",
+        "location": "陕西省延安市洛川县凤栖镇工业园",
+        "capacity": 500,
+        "usedCapacity": 320,
+        "temperature": 2.0,
+        "humidity": 88.0,
+        "manager": "李仓管",
+        "phone": "13900139010",
+        "status": "ACTIVE",
+        "remark": "洛川核心冷库，服务周边 30+ 果园"
+      }
+    ],
+    "inboundRecord": {
+      "id": 3001,
+      "recordNo": "WH-IN-20260406-001",
+      "warehouseId": 3001,
+      "warehouseName": "洛川气调库",
+      "recordType": "INBOUND",
+      "batchCode": "HB20260406001",
+      "traceCode": "TC20260406001",
+      "variety": "红富士",
+      "grade": "A",
+      "quantity": 5000,
+      "unit": "kg",
+      "temperature": 2.0,
+      "humidity": 88.0,
+      "operator": "李仓管",
+      "operatedAt": "2026-04-06 20:30:00",
+      "remark": "张三红富士果园首批入库"
+    }
+  },
+
+  "coldchain": {
+    "transport": {
+      "id": 4001,
+      "taskCode": "CC-20260407-001",
+      "vehiclePlate": "陕A·12345",
+      "vehicleType": "REFRIGERATED",
+      "vehicleTypeName": "冷藏车",
+      "driverName": "马师傅",
+      "driverPhone": "13900139020",
+      "origin": "洛川气调库",
+      "originAddress": "陕西省延安市洛川县凤栖镇工业园",
+      "destination": "西安胡家庙果品批发市场",
+      "destinationAddress": "陕西省西安市新城区胡家庙",
+      "distance": 280,
+      "distanceUnit": "km",
+      "totalWeight": 5000,
+      "weightUnit": "kg",
+      "temperatureReq": "0~4",
+      "setTemperature": 2.0,
+      "status": "COMPLETED",
+      "departedAt": "2026-04-07 05:00:00",
+      "deliveredAt": "2026-04-07 09:20:00",
+      "receiverName": "西安鲜果集散中心",
+      "receiverPhone": "029-88885001",
+      "remark": "洛川至西安，全程高速"
+    },
+    "temperatureRecords": [
+      {
+        "id": 1,
+        "taskId": 4001,
+        "taskCode": "CC-20260407-001",
+        "recordedAt": "2026-04-07 05:10:00",
+        "temperature": 2.1,
+        "humidity": 86.0,
+        "gpsLng": 109.38,
+        "gpsLat": 35.80,
+        "location": "洛川收费站入口"
+      },
+      {
+        "id": 2,
+        "taskId": 4001,
+        "taskCode": "CC-20260407-001",
+        "recordedAt": "2026-04-07 06:30:00",
+        "temperature": 1.8,
+        "humidity": 85.0,
+        "gpsLng": 108.95,
+        "gpsLat": 34.50,
+        "location": "黄陵服务区"
+      },
+      {
+        "id": 3,
+        "taskId": 4001,
+        "taskCode": "CC-20260407-001",
+        "recordedAt": "2026-04-07 08:00:00",
+        "temperature": 2.3,
+        "humidity": 84.0,
+        "gpsLng": 108.95,
+        "gpsLat": 34.26,
+        "location": "铜川南"
+      },
+      {
+        "id": 4,
+        "taskId": 4001,
+        "taskCode": "CC-20260407-001",
+        "recordedAt": "2026-04-07 09:15:00",
+        "temperature": 2.0,
+        "humidity": 83.0,
+        "gpsLng": 108.96,
+        "gpsLat": 34.27,
+        "location": "西安东三环"
+      }
+    ]
+  },
+
+  "trade": {
+    "list": [
+      {
+        "id": 5001,
+        "orderNo": "TD-20260408-001",
+        "buyerName": "西安胡家庙果品批发市场",
+        "sellerName": "张三",
+        "farmerName": "张三",
+        "farmerId": 1001,
+        "orchardName": "张三红富士果园",
+        "variety": "红富士",
+        "grade": "A",
+        "quantity": 2000,
+        "unit": "kg",
+        "unitPrice": 8.5,
+        "totalAmount": 17000,
+        "tradeDate": "2026-04-08",
+        "createdAt": "2026-04-08 10:00:00",
+        "status": "COMPLETED",
+        "paymentMethod": "银行转账",
+        "remark": "线下批发市场当面交易，验货后付款"
+      }
+    ],
+    "detail": {
+      "id": 5001,
+      "orderNo": "TD-20260408-001",
+      "buyerName": "西安胡家庙果品批发市场",
+      "buyerPhone": "029-88885001",
+      "buyerAddress": "陕西省西安市新城区胡家庙",
+      "sellerName": "张三",
+      "sellerPhone": "13900139001",
+      "farmerName": "张三",
+      "farmerId": 1001,
+      "orchardName": "张三红富士果园",
+      "orchardId": 1001,
+      "variety": "红富士",
+      "grade": "A",
+      "quantity": 2000,
+      "unit": "kg",
+      "unitPrice": 8.5,
+      "totalAmount": 17000,
+      "tradeDate": "2026-04-08",
+      "createdAt": "2026-04-08 10:00:00",
+      "completedAt": "2026-04-08 14:30:00",
+      "status": "COMPLETED",
+      "paymentMethod": "银行转账",
+      "traceCode": "TC20260406001",
+      "coldchainTaskCode": "CC-20260407-001",
+      "warehouseName": "洛川气调库",
+      "remark": "线下批发市场当面交易，验货后付款"
+    }
+  },
+
+  "dashboard": {
+    "overview": {
+      "totalOrchards": 1,
+      "totalFarmers": 1,
+      "totalArea": 10,
+      "areaUnit": "亩",
+      "totalHarvest": 5000,
+      "harvestUnit": "kg",
+      "totalTradeAmount": 17000,
+      "totalTradeQuantity": 2000,
+      "pendingTasks": 0
+    },
+    "timelineSummary": {
+      "days": 14,
+      "startDate": "2026-03-25",
+      "endDate": "2026-04-08",
+      "completedSteps": 7,
+      "totalSteps": 7
+    },
+    "orchardStats": {
+      "orchardCount": 1,
+      "totalArea": 10,
+      "varieties": ["红富士"],
+      "organicCertCount": 1,
+      "plantingRecordsCount": 3
+    },
+    "harvestStats": {
+      "batchCount": 1,
+      "totalQuantity": 5000,
+      "gradeDistribution": { "A": 5000 },
+      "avgSugarDegree": 14.5,
+      "passRate": 100
+    },
+    "traceStats": {
+      "traceCodeCount": 1,
+      "batchLevelCount": 1,
+      "boxLevelCount": 50,
+      "fruitLevelCount": 500,
+      "scanCount": 0
+    },
+    "warehouseStats": {
+      "warehouseCount": 1,
+      "totalCapacity": 500,
+      "usedCapacity": 320,
+      "utilizationRate": 64.0,
+      "currentTemperature": 2.0
+    },
+    "coldchainStats": {
+      "taskCount": 1,
+      "completedCount": 1,
+      "completionRate": 100.0,
+      "avgTemperature": 2.05,
+      "temperatureRecordsCount": 4,
+      "allWithinRange": true,
+      "totalDistance": 280
+    },
+    "tradeStats": {
+      "orderCount": 1,
+      "completedCount": 1,
+      "totalQuantity": 2000,
+      "totalAmount": 17000,
+      "avgUnitPrice": 8.5
+    },
+    "recentActivity": [
+      {
+        "time": "2026-04-08 14:30:00",
+        "type": "TRADE",
+        "description": "交易完成：西安胡家庙果品批发市场 采购 2000kg 红富士，成交额 17000 元"
+      },
+      {
+        "time": "2026-04-07 09:20:00",
+        "type": "COLDCHAIN",
+        "description": "冷链送达：陕A·12345 抵达西安胡家庙，全程 2.1 C 恒温"
+      },
+      {
+        "time": "2026-04-07 05:00:00",
+        "type": "COLDCHAIN",
+        "description": "冷链发车：陕A·12345 从洛川气调库出发，目的地西安"
+      },
+      {
+        "time": "2026-04-06 20:30:00",
+        "type": "WAREHOUSE",
+        "description": "入库完成：洛川气调库入库 5000kg A 级红富士"
+      },
+      {
+        "time": "2026-04-06 18:00:00",
+        "type": "TRACE",
+        "description": "溯源码生成：TC20260406001，三级码体系（1 批次 / 50 箱 / 500 果）"
+      },
+      {
+        "time": "2026-04-06 17:00:00",
+        "type": "HARVEST",
+        "description": "采收完成：张三红富士果园 5000kg A 级红富士，农残检测合格"
+      },
+      {
+        "time": "2026-04-02 07:30:00",
+        "type": "PLANTING",
+        "description": "疏花疏果：保留中心花，每花序 1 朵，间隔 20cm"
+      },
+      {
+        "time": "2026-03-30 08:30:00",
+        "type": "PLANTING",
+        "description": "春季修剪：疏除背上枝、重叠枝，改善通风透光"
+      },
+      {
+        "time": "2026-03-26 09:00:00",
+        "type": "PLANTING",
+        "description": "施有机肥：330kg 生物菌肥，沟施覆土"
+      },
+      {
+        "time": "2026-03-25 08:00:00",
+        "type": "ORCHARD",
+        "description": "果园注册：张三红富士果园，10 亩，洛川县凤栖镇"
+      }
+    ]
+  }
+}

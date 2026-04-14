@@ -30,9 +30,12 @@ public class OpenApiController {
     public R<BdApiClient> register(@RequestBody BdApiClient client) {
         // Generate appKey and a placeholder encrypted secret
         client.setAppKey(generateAppKey());
-        client.setAppSecretEnc(generateSecret());
+        String secret = generateSecret();
+        client.setAppSecretEnc(secret);
         client.setStatus("ACTIVE");
         apiClientService.save(client);
+        // Clear encrypted secret from response — only shown once at creation
+        client.setAppSecretEnc(null);
         return R.ok(client);
     }
 
@@ -41,7 +44,10 @@ public class OpenApiController {
     public R<IPage<BdApiClient>> list(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return R.ok(apiClientService.page(new Page<>(page, size)));
+        IPage<BdApiClient> result = apiClientService.page(new Page<>(page, size));
+        // Mask encrypted secrets in list responses
+        result.getRecords().forEach(c -> c.setAppSecretEnc(null));
+        return R.ok(result);
     }
 
     @Operation(summary = "更新客户端状态（ACTIVE/DISABLED/REVOKED）")
@@ -79,10 +85,17 @@ public class OpenApiController {
             return R.fail("客户端不存在");
         }
         client.setAppKey(generateAppKey());
-        client.setAppSecretEnc(generateSecret());
+        String newSecret = generateSecret();
+        client.setAppSecretEnc(newSecret);
         apiClientService.updateById(client);
-        // Return updated client (secret visible only at this moment)
-        return R.ok(client);
+        // Return updated client with secret visible only at this moment
+        BdApiClient response = new BdApiClient();
+        response.setId(client.getId());
+        response.setAppKey(client.getAppKey());
+        response.setClientName(client.getClientName());
+        response.setStatus(client.getStatus());
+        response.setAppSecretEnc(newSecret);
+        return R.ok(response);
     }
 
     // ── private helpers ──────────────────────────────────────────────────────

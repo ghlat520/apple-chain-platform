@@ -33,4 +33,19 @@ export const coldchainApi = {
   signDelivery: (id, data) => request.post(`/coldchain/deliveries/${id}/sign`, data),
   deleteDelivery: (id) => request.delete(`/coldchain/deliveries/${id}`),
   exportDeliveries: () => downloadFile('/api/coldchain/deliveries/export', '配送记录.csv'),
+
+  // Precooling (PreCoolTaskController: list + detail + create + start + complete)
+  getPrecooling: (params) => request.get('/coldchain/precool', { params }),
+  getPrecoolTask: (id) => request.get(`/coldchain/precool/${id}`),
+  createPrecooling: (data) => request.post('/coldchain/precool', data),
+  startPrecooling: (id) => request.put(`/coldchain/precool/${id}/start`),
+  completePrecooling: (id) => request.put(`/coldchain/precool/${id}/complete`),
+
+  // Statistics
+  getStatisticsSummary: () => request.get('/coldchain/statistics/summary'),
+  getTransportTrend: (params) => request.get('/coldchain/statistics/transport-trend', { params }),
+  getColdchainAlarms: (days = 30) => request.get('/coldchain/statistics/alarms', { params: { days } }),
+
+  // 车辆状态变更
+  changeVehicleStatus: (id, status) => request.put(`/coldchain/vehicles/${id}/status`, { status }),
 }

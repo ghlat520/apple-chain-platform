@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * Dashboard supplement endpoints providing cross-module aggregations via JdbcTemplate.
- * All queries target production tables (wh_warehouse, fn_loan, td_trade_order, wh_warehouse_record).
+ * All queries target production tables (wh_warehouse, sf_loan, td_trade_order, wh_record).
  */
 @Tag(name = "大屏补充统计")
 @RestController
@@ -33,7 +33,7 @@ public class DashboardSupplementController {
         String sql = "SELECT COUNT(*) as cnt, " +
                 "COALESCE(SUM(capacity),0) as cap, " +
                 "COALESCE(SUM(used_capacity),0) as used " +
-                "FROM wh_warehouse WHERE deleted=0";
+                "FROM wh_warehouse WHERE deleted=0";  // correct table name
         Map<String, Object> row = jdbcTemplate.queryForMap(sql);
         Map<String, Object> result = new HashMap<>();
         result.put("warehouseCount", row.get("cnt"));
@@ -46,8 +46,8 @@ public class DashboardSupplementController {
     @GetMapping("/finance-scale")
     public R<Map<String, Object>> financeScale() {
         String sql = "SELECT COUNT(*) as cnt, " +
-                "COALESCE(SUM(apply_amount),0) as amt " +
-                "FROM fn_loan WHERE deleted=0";
+                "COALESCE(SUM(amount),0) as amt " +
+                "FROM sf_loan WHERE deleted=0";
         Map<String, Object> row = jdbcTemplate.queryForMap(sql);
         Map<String, Object> result = new HashMap<>();
         result.put("loanCount", row.get("cnt"));
@@ -75,7 +75,7 @@ public class DashboardSupplementController {
         String sql = "SELECT " +
                 "SUM(CASE WHEN record_type='INBOUND' THEN quantity ELSE 0 END) as inb, " +
                 "SUM(CASE WHEN record_type='OUTBOUND' THEN quantity ELSE 0 END) as outb " +
-                "FROM wh_warehouse_record WHERE deleted=0";
+                "FROM wh_record WHERE deleted=0";
         Map<String, Object> row = jdbcTemplate.queryForMap(sql);
         Map<String, Object> result = new HashMap<>();
         result.put("inbound", row.get("inb"));

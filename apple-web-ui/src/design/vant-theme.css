@@ -1,0 +1,245 @@
+/**
+ * apple-chain-platform Vant 主题覆盖
+ *
+ * 方式：通过 CSS 变量覆盖 Vant 4 的 --van-* 变量，无需 Less 编译。
+ * 导入：在 src/main.js 中 import '@/design/vant-theme.css'（放在 vant/lib/index.css 之后）
+ *
+ * 所有颜色/尺寸/圆角 = DESIGN.md 的具象落地
+ */
+
+/* ==================== 全局 Design Tokens ==================== */
+:root {
+  /* Brand */
+  --color-brand-primary: #D32F2F;
+  --color-brand-hover: #C62828;
+  --color-brand-active: #B71C1C;
+  --color-brand-light: #FFEBEE;
+
+  /* Accent */
+  --color-leaf-green: #43A047;
+  --color-leaf-green-light: #E8F5E9;
+
+  /* Text */
+  --color-text-primary: #2C2E32;
+  --color-text-secondary: #5E6368;
+  --color-text-tertiary: #8A9099;
+  --color-text-disabled: #BDC1C7;
+  --color-text-inverse: #FFFFFF;
+
+  /* Surface */
+  --color-surface-base: #FAFAF8;       /* 暖米白 */
+  --color-surface-raised: #FFFFFF;
+  --color-surface-sunken: #F5F5F2;
+
+  /* Border */
+  --color-border-default: rgba(44, 46, 50, 0.08);
+  --color-border-strong: rgba(44, 46, 50, 0.16);
+  --color-divider: rgba(44, 46, 50, 0.06);
+
+  /* Semantic */
+  --color-success: #43A047;
+  --color-success-bg: #E8F5E9;
+  --color-warning: #F57C00;
+  --color-warning-bg: #FFF3E0;
+  --color-error: #D32F2F;
+  --color-error-bg: #FFEBEE;
+  --color-info: #1976D2;
+  --color-info-bg: #E3F2FD;
+
+  /* IoT */
+  --color-temp-normal: #1976D2;
+  --color-temp-warning: #F57C00;
+  --color-temp-critical: #D32F2F;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-base: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* Border widths */
+  --border-width-default: 1px;
+  --border-width-strong: 4px;
+
+  /* Outline */
+  --outline-width: 2px;
+
+  /* FAB */
+  --fab-size: 56px;
+  --fab-bottom-offset: 72px;
+
+  /* Shadow */
+  --shadow-1: 0 1px 2px rgba(44,46,50,0.04);
+  --shadow-2: 0 4px 12px rgba(44,46,50,0.08);
+  --shadow-3: 0 16px 48px rgba(0,0,0,0.15);
+  --shadow-4: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-focus: 0 0 0 4px rgba(211, 47, 47, 0.15);
+
+  /* Motion */
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+  --motion-slow: 400ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Density (default = comfortable) */
+  --density-button-height: 48px;
+  --density-input-height: 48px;
+  --density-cell-height: 56px;
+  --density-cell-padding-y: 14px;
+  --density-cell-padding-x: 16px;
+
+  /* Typography */
+  --font-body: "PingFang SC", "Source Han Sans SC", "Microsoft YaHei", -apple-system, Inter, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+  --font-size-body: 16px;
+  --line-height-body: 1.6;
+
+  /* Typography scale */
+  --font-size-display-l: 28px;
+  --font-size-h1: 22px;
+  --font-size-h2: 18px;
+  --font-size-h3: 16px;
+  --font-size-body-l: 17px;
+  --font-size-body-s: 14px;
+  --font-size-caption: 13px;
+  --font-size-overline: 12px;
+  --font-size-number-l: 24px;
+
+  /* Z-Index */
+  --z-sticky: 1100;
+}
+
+/* ==================== Density 模式切换 ==================== */
+[data-density="spacious"] {
+  --density-button-height: 56px;
+  --density-input-height: 56px;
+  --density-cell-height: 64px;
+  --density-cell-padding-y: 16px;
+  --density-cell-padding-x: 20px;
+  --font-size-body: 18px;
+}
+
+[data-density="compact"] {
+  --density-button-height: 40px;
+  --density-input-height: 40px;
+  --density-cell-height: 44px;
+  --density-cell-padding-y: 10px;
+  --density-cell-padding-x: 14px;
+  --font-size-body: 14px;
+}
+
+/* ==================== Vant 4 变量覆盖 ==================== */
+:root {
+  /* —— 主色 —— */
+  --van-primary-color: var(--color-brand-primary);
+  --van-success-color: var(--color-success);
+  --van-warning-color: var(--color-warning);
+  --van-danger-color: var(--color-error);
+
+  /* —— 文字 —— */
+  --van-text-color: var(--color-text-primary);
+  --van-text-color-2: var(--color-text-secondary);
+  --van-text-color-3: var(--color-text-tertiary);
+
+  /* —— 背景 —— */
+  --van-background: var(--color-surface-base);
+  --van-background-2: var(--color-surface-raised);
+  --van-background-3: var(--color-surface-sunken);
+
+  /* —— 边框 —— */
+  --van-border-color: var(--color-border-default);
+
+  /* —— Button 覆盖 —— */
+  --van-button-primary-background: var(--color-brand-primary);
+  --van-button-primary-border-color: var(--color-brand-primary);
+  --van-button-danger-background: var(--color-brand-primary);
+  --van-button-success-background: var(--color-success);
+  --van-button-border-radius: var(--radius-base);       /* 覆盖默认 2px */
+  --van-button-round-border-radius: 9999px;
+  --van-button-default-height: var(--density-button-height);
+  --van-button-normal-font-size: 16px;
+
+  /* —— Cell 覆盖 —— */
+  --van-cell-font-size: 16px;
+  --van-cell-line-height: 1.6;
+  --van-cell-vertical-padding: var(--density-cell-padding-y);
+  --van-cell-horizontal-padding: var(--density-cell-padding-x);
+  --van-cell-background: var(--color-surface-raised);
+
+  /* —— Field (Input) 覆盖 —— */
+  --van-field-input-text-color: var(--color-text-primary);
+  --van-field-placeholder-text-color: var(--color-text-tertiary);
+
+  /* —— Card 覆盖 —— */
+  --van-card-background: var(--color-surface-raised);
+
+  /* —— Dialog 覆盖 —— */
+  --van-dialog-background: var(--color-surface-raised);
+  --van-dialog-border-radius: var(--radius-lg);
+
+  /* —— Toast 覆盖 —— */
+  --van-toast-border-radius: var(--radius-base);
+
+  /* —— Tag 覆盖 —— */
+  --van-tag-border-radius: var(--radius-sm);
+
+  /* —— NavBar 覆盖 —— */
+  --van-nav-bar-background: var(--color-surface-raised);
+  --van-nav-bar-title-text-color: var(--color-text-primary);
+  --van-nav-bar-icon-color: var(--color-text-primary);
+
+  /* —— Tabbar 覆盖 —— */
+  --van-tabbar-background: var(--color-surface-raised);
+  --van-tabbar-item-active-color: var(--color-brand-primary);
+}
+
+/* ==================== 全局基础样式 ==================== */
+html, body {
+  background-color: var(--color-surface-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 数字等宽 */
+.nums-tabular,
+.number,
+.price,
+.amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* 焦点环 —— 强制可见 */
+*:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* 遵守 prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

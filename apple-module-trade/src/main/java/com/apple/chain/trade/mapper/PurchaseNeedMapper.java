@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface PurchaseNeedMapper extends BaseMapper<PurchaseNeed> {
 
-    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(need_no, 12) AS BIGINT)), 0) + 1 " +
+    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(need_no, 12) AS SIGNED)), 0) + 1 " +
             "FROM td_purchase_need WHERE need_no LIKE CONCAT('NED', #{prefix}, '%')")
     int nextSeq(String prefix);
 }

@@ -14,7 +14,9 @@
 -- =============================================================================
 
 ALTER TABLE `pt_orchard`
-    ADD COLUMN `center_lat`        DECIMAL(10,7) NULL COMMENT 'GIS 中心点纬度（边界质心）' AFTER `latitude`,
+    ADD COLUMN `latitude`          DECIMAL(10,7) NULL COMMENT '纬度' AFTER `area`,
+    ADD COLUMN `longitude`         DECIMAL(10,7) NULL COMMENT '经度' AFTER `latitude`,
+    ADD COLUMN `center_lat`        DECIMAL(10,7) NULL COMMENT 'GIS 中心点纬度（边界质心）' AFTER `longitude`,
     ADD COLUMN `center_lng`        DECIMAL(10,7) NULL COMMENT 'GIS 中心点经度（边界质心）' AFTER `center_lat`,
     ADD COLUMN `boundary_geojson`  JSON          NULL COMMENT '地块边界 GeoJSON Polygon' AFTER `center_lng`,
     ADD COLUMN `area_mu`           DECIMAL(12,2) NULL COMMENT '由边界自动计算的面积（亩）' AFTER `boundary_geojson`;

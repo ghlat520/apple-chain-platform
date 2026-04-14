@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface TraceBatchMapper extends BaseMapper<TraceBatch> {
 
-    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(batch_code, 11) AS BIGINT)), 0) + 1 " +
+    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(batch_code, 11) AS SIGNED)), 0) + 1 " +
             "FROM trace_batch WHERE batch_code LIKE CONCAT('TB', #{prefix}, '%')")
     int nextSeq(String prefix);
 

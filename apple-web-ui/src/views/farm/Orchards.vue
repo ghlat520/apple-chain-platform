@@ -33,7 +33,7 @@
       >
         <van-cell-group inset style="margin-bottom:8px" v-for="item in list" :key="item.id">
           <van-cell
-            :title="item.orchardName || item.name"
+            :title="item.orchardName || '未命名果园'"
             :label="`${item.location || '位置未填写'} · ${item.area || 0} 亩`"
             is-link
             @click="openDetailDrawer(item)"
@@ -61,7 +61,7 @@
       <van-form @submit="handleSubmit" class="drawer-form">
         <van-cell-group inset>
           <van-field
-            v-model="form.name"
+            v-model="form.orchardName"
             label="果园名称"
             placeholder="请输入果园名称"
             :rules="[{ required: true, message: '请填写果园名称' }]"
@@ -125,7 +125,7 @@
         <van-icon name="cross" @click="showDetail = false" />
       </div>
       <van-cell-group inset v-if="currentItem">
-        <van-cell title="果园名称" :value="currentItem.orchardName || currentItem.name" />
+        <van-cell title="果园名称" :value="currentItem.orchardName || '-'" />
         <van-cell title="地理位置" :value="currentItem.location || '-'" />
         <van-cell title="面积（亩）" :value="currentItem.area ?? '-'" />
         <van-cell title="负责人" :value="currentItem.owner || '-'" />
@@ -162,7 +162,7 @@ const editId = ref(null)
 const currentItem = ref(null)
 
 const query = reactive({ keyword: '', status: '', page: 1, pageSize: 10 })
-const form = reactive({ name: '', location: '', area: '', owner: '', phone: '', remark: '', status: 'ACTIVE' })
+const form = reactive({ orchardName: '', location: '', area: '', owner: '', phone: '', remark: '', status: 'ACTIVE' })
 
 function statusTagType(status) {
   const s = (status || '').toUpperCase()
@@ -177,7 +177,7 @@ function statusLabel(status) {
 }
 
 function resetForm() {
-  Object.assign(form, { name: '', location: '', area: '', owner: '', phone: '', remark: '', status: 'ACTIVE' })
+  Object.assign(form, { orchardName: '', location: '', area: '', owner: '', phone: '', remark: '', status: 'ACTIVE' })
 }
 
 async function loadList() {
@@ -224,7 +224,7 @@ function openAddDrawer() {
 
 function openEditDrawer(item) {
   Object.assign(form, {
-    name: item.name,
+    orchardName: item.orchardName || '',
     location: item.location || '',
     area: item.area || '',
     owner: item.owner || '',
@@ -261,7 +261,7 @@ async function handleSubmit() {
 
 async function handleDelete(item) {
   try {
-    await showConfirmDialog({ title: '确认删除', message: `确认删除果园「${item.name}」？` })
+    await showConfirmDialog({ title: '确认删除', message: `确认删除果园「${item.orchardName || '未命名果园'}」？` })
     await farmApi.deleteOrchard(item.id)
     showToast({ type: 'success', message: '删除成功' })
     showDetail.value = false

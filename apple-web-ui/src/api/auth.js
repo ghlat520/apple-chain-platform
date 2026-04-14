@@ -9,6 +9,14 @@ export const authApi = {
   updatePassword: (data) => request.put('/user/auth/password', data)
 }
 
+export const userApi = {
+  listUsers: (params) => request.get('/user/list', { params }),
+  createUser: (data) => request.post('/user/create', data),
+  updateUser: (id, data) => request.put(`/user/${id}`, data),
+  deleteUser: (id) => request.delete(`/user/${id}`),
+  exportUsers: (params) => request.get('/user/export', { params, responseType: 'blob' }),
+}
+
 export const rbacApi = {
   listRoles: () => request.get('/admin/roles'),
   listPermissions: () => request.get('/admin/permissions'),

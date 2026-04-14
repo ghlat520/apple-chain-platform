@@ -20,11 +20,11 @@ Thumbs.db
 *.log
 logs/
 
-# Frontend
-apple-web-ui/node_modules/
-apple-web-ui/dist/
-frontend/node_modules/
-frontend/dist/
+# Frontend (generic - covers all current and future Vue projects)
+**/node_modules/
+**/dist/
+**/.vite/
+*.tsbuildinfo
 
 # Local secrets (do NOT commit)
 apple-web/src/main/resources/application-local.yml

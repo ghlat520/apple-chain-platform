@@ -380,6 +380,34 @@ CREATE TABLE IF NOT EXISTS bd_api_call_log (
 ) COMMENT='大数据-开放 API 调用日志';
 
 -- ---------------------------------------------
+-- 11. Analysis report (WEEKLY / MONTHLY / SEASONAL)
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS bd_analysis_report (
+    id              BIGINT        PRIMARY KEY,
+    report_no       VARCHAR(64)   NOT NULL COMMENT 'RPT-W/M/S-period-HHmmss',
+    title           VARCHAR(256)  NOT NULL,
+    report_type     VARCHAR(32)   NOT NULL COMMENT 'WEEKLY/MONTHLY/SEASONAL',
+    period          VARCHAR(32)   NOT NULL COMMENT '2026-W15 / 2026-04 / 2026-Q2',
+    status          VARCHAR(16)   DEFAULT 'DRAFT' COMMENT 'DRAFT/GENERATING/PUBLISHED',
+    generated_time  DATETIME      NULL,
+    planting_section TEXT         NULL COMMENT 'JSON 种植聚合',
+    trade_section    TEXT         NULL COMMENT 'JSON 交易聚合',
+    warehouse_section TEXT        NULL COMMENT 'JSON 仓储聚合',
+    finance_section  TEXT         NULL COMMENT 'JSON 金融聚合',
+    summary         VARCHAR(2000) NULL,
+    published_by    VARCHAR(64)   NULL,
+    published_time  DATETIME      NULL,
+    owner           VARCHAR(64)   NULL,
+    remark          VARCHAR(500)  NULL,
+    create_time     DATETIME      DEFAULT CURRENT_TIMESTAMP,
+    update_time     DATETIME      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    create_by       VARCHAR(50)   NULL,
+    deleted         INT           DEFAULT 0,
+    UNIQUE KEY uk_report_no (report_no, deleted),
+    INDEX idx_type_period (report_type, period)
+) COMMENT='大数据-分析报告';
+
+-- ---------------------------------------------
 -- Seed data: register 8 internal sources + 4 external sources
 -- ---------------------------------------------
 INSERT INTO bd_data_source (id, source_code, source_name, source_type, category, connect_url, status, remark)

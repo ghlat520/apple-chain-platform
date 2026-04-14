@@ -36,6 +36,19 @@
       <div ref="trendChart" style="height:220px;"></div>
     </div>
 
+    <!-- 演示闭环入口 -->
+    <div style="padding:16px 16px 0;">
+      <van-button
+        block
+        type="primary"
+        color="#07c160"
+        icon="guide-o"
+        @click="router.push('/orchards')"
+      >
+        开始全链路演示
+      </van-button>
+    </div>
+
     <div class="section-header" style="margin-top:16px;">
       <span class="section-title">待处理事项</span>
     </div>

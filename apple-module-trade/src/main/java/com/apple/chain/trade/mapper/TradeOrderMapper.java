@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface TradeOrderMapper extends BaseMapper<TradeOrder> {
 
-    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(order_no, 12) AS BIGINT)), 0) + 1 " +
+    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(order_no, 12) AS SIGNED)), 0) + 1 " +
             "FROM td_trade_order WHERE order_no LIKE CONCAT('ORD', #{prefix}, '%')")
     int nextSeq(String prefix);
 }

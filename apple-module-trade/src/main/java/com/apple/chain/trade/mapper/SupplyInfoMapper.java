@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface SupplyInfoMapper extends BaseMapper<SupplyInfo> {
 
-    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(supply_no, 12) AS BIGINT)), 0) + 1 " +
+    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(supply_no, 12) AS SIGNED)), 0) + 1 " +
             "FROM td_supply_info WHERE supply_no LIKE CONCAT('SUP', #{prefix}, '%')")
     int nextSeq(String prefix);
 }

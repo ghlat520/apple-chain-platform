@@ -26,5 +26,24 @@ export const traceApi = {
     request.post('/trace/code/generate-fruit', null, { params: { boxCode, fruitCount } }),
   verifyCode: (code) => request.get(`/trace/code/verify/${code}`),
   exportVdp: (batchId, format = 'csv') =>
-    downloadFile(`/api/trace/code/vdp-export/${batchId}?format=${format}`, `VDP_${batchId}.${format}`)
+    downloadFile(`/api/trace/code/vdp-export/${batchId}?format=${format}`, `VDP_${batchId}.${format}`),
+
+  // Anomaly trace
+  getAnomalies: (params) => request.get('/trace/anomaly', { params }),
+  getAnomaly: (id) => request.get(`/trace/anomaly/${id}`),
+  reportAnomaly: (data) => request.post('/trace/anomaly', data),
+  investigateAnomaly: (id) => request.put(`/trace/anomaly/${id}/investigate`),
+  resolveAnomaly: (id, data) => request.put(`/trace/anomaly/${id}/resolve`, data),
+  getAnomalyImpact: (traceCode) => request.get(`/trace/anomaly/impact/${traceCode}`),
+
+  // Blockchain certification (区块链存证)
+  submitChain: (data) => request.post('/trace/chain/submit', data),
+  verifyChain: (traceCode) => request.get(`/trace/chain/verify/${traceCode}`),
+  getChainRecords: (params) => request.get('/admin/chain/records', { params }),
+  retryChain: (id) => request.post(`/admin/chain/retry/${id}`),
+
+  // Contract-lint 补齐
+  getScanFull: (traceCode) => request.get(`/trace/scan/${traceCode}/full`),
+  getQrcode: (traceCode, params) => request.get(`/trace/qrcode/${traceCode}`, { params, responseType: 'blob' }),
+  scanBatchByCode: (batchCode) => request.get(`/trace/batches/scan/${batchCode}`),
 }

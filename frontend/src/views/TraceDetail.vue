@@ -35,16 +35,30 @@
       <van-cell title="区块链哈希" :value="record.blockchainHash || '待上链'" />
       <van-cell title="上链时间" :value="record.chainedAt || '-'" />
     </van-cell-group>
+
+    <!-- 演示链路导航 -->
+    <div style="padding:16px;">
+      <van-button
+        block
+        type="primary"
+        color="#07c160"
+        icon="guide-o"
+        @click="router.push('/warehouse')"
+      >
+        下一步：入库仓储
+      </van-button>
+    </div>
   </div>
   <van-loading v-else type="spinner" vertical style="margin-top:120px;">加载中...</van-loading>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { traceApi } from '@/api/trace'
 
 const route = useRoute()
+const router = useRouter()
 const record = ref(null)
 
 onMounted(async () => {

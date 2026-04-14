@@ -3,10 +3,15 @@ package com.apple.chain.common.result;
 import lombok.Getter;
 
 /**
- * Standard result codes.
+ * Platform-wide generic result codes (0 ~ 99999 range).
+ *
+ * <p>Module-specific business errors live in their own enums (e.g.
+ * {@code UserErrorCode}) — all of which implement {@link IErrorCode} just like
+ * this enum does, so they can be passed interchangeably to
+ * {@link com.apple.chain.common.exception.BizException} and {@link R#fail}.
  */
 @Getter
-public enum ResultCode {
+public enum ResultCode implements IErrorCode {
 
     SUCCESS(200, "操作成功"),
     FAIL(400, "操作失败"),

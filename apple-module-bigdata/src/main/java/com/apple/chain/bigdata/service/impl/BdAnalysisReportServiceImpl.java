@@ -148,8 +148,8 @@ public class BdAnalysisReportServiceImpl
         try {
             Map<String, Object> row = jdbcTemplate.queryForMap(
                     "SELECT COUNT(*) as loan_count, " +
-                    "COALESCE(SUM(apply_amount),0) as total_amt " +
-                    "FROM fn_loan WHERE deleted=0");
+                    "COALESCE(SUM(amount),0) as total_amt " +
+                    "FROM sf_loan WHERE deleted=0");
             data.put("loanCount", row.get("loan_count"));
             data.put("totalAmount", row.get("total_amt"));
         } catch (Exception e) {

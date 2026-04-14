@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  */
 @Getter
 @Setter
-@TableName("pt_orchard")
+@TableName("farm_orchard")
 public class Orchard extends BaseEntity {
 
     /** Unique orchard number, format: ORD+yyyyMMdd+seq */

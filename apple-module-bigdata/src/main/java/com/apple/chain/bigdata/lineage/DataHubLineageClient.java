@@ -42,7 +42,12 @@ import java.util.UUID;
 @Component
 public class DataHubLineageClient {
 
-    private static final String PRODUCER = "https://github.com/apple-chain/bigdata";
+    // DataHub v0.15.0 getOrchestrator() regex requires this URL pattern.
+    // See: OpenLineageToDataHub.java#getOrchestrator — matches
+    //   "https://github.com/OpenLineage/OpenLineage/.*/(.*)$" and captures group(1)
+    //   as the orchestrator name ("apple_chain" here).
+    private static final String PRODUCER =
+            "https://github.com/OpenLineage/OpenLineage/integration/apple_chain";
     private static final String SCHEMA_URL =
             "https://openlineage.io/spec/2-0-2/OpenLineage.json#/definitions/RunEvent";
 

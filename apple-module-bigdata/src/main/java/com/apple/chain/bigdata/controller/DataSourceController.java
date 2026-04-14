@@ -39,19 +39,25 @@ public class DataSourceController {
                     .or().like(BdDataSource::getSourceCode, keyword));
         }
         wrapper.orderByDesc(BdDataSource::getId);
-        return R.ok(PageResult.of(service.page(new Page<>(page, size), wrapper)));
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<BdDataSource> result =
+                service.page(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(page, size), wrapper);
+        result.getRecords().forEach(ds -> ds.setPasswordEnc(null));
+        return R.ok(PageResult.of(result));
     }
 
     @Operation(summary = "获取数据源详情")
     @GetMapping("/{id}")
     public R<BdDataSource> get(@PathVariable Long id) {
-        return R.ok(service.getById(id));
+        BdDataSource ds = service.getById(id);
+        if (ds != null) ds.setPasswordEnc(null);
+        return R.ok(ds);
     }
 
     @Operation(summary = "新增数据源")
     @PostMapping
     public R<BdDataSource> create(@RequestBody BdDataSource body) {
         service.save(body);
+        body.setPasswordEnc(null);
         return R.ok(body);
     }
 
@@ -60,6 +66,7 @@ public class DataSourceController {
     public R<BdDataSource> update(@PathVariable Long id, @RequestBody BdDataSource body) {
         body.setId(id);
         service.updateById(body);
+        body.setPasswordEnc(null);
         return R.ok(body);
     }
 
