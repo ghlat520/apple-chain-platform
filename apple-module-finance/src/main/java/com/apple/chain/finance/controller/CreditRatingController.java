@@ -43,6 +43,13 @@ public class CreditRatingController {
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) { creditRatingService.deleteRating(id); return R.ok("删除成功", null); }
 
+    @Operation(summary = "计算信用评分")
+    @PostMapping("/{entityId}/calculate")
+    public R<CreditRating> calculate(@PathVariable Long entityId,
+                                     @RequestParam String entityType) {
+        return R.ok(creditRatingService.calculateScore(entityId, entityType));
+    }
+
     @Operation(summary = "导出信用评级CSV")
     @GetMapping("/export")
     public void export(@RequestParam(required = false) String keyword, @RequestParam(required = false) String entityType,

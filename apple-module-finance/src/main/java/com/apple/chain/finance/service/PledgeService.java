@@ -14,4 +14,5 @@ public interface PledgeService extends IService<Pledge> {
     Pledge release(Long id);
     void deletePledge(Long id);
     void exportPledges(String keyword, String status, HttpServletResponse response);
+    Pledge markDefault(Long id);
 }

@@ -12,4 +12,5 @@ public interface CreditRatingService extends IService<CreditRating> {
     CreditRating updateRating(Long id, CreditRating rating);
     void deleteRating(Long id);
     void exportRatings(String keyword, String entityType, String creditLevel, HttpServletResponse response);
+    CreditRating calculateScore(Long entityId, String entityType);
 }

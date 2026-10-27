@@ -29,6 +29,7 @@ import java.util.Map;
 public class TraceController {
 
     private final TraceService traceService;
+    private final com.apple.chain.trace.service.TraceAggregationService traceAggregationService;
 
     @Operation(summary = "溯源链列表（分页）")
     @GetMapping("/list")
@@ -50,6 +51,12 @@ public class TraceController {
     @GetMapping("/scan/{traceCode}")
     public R<Map<String, Object>> scan(@PathVariable String traceCode) {
         return R.ok(traceService.publicScan(traceCode));
+    }
+
+    @Operation(summary = "公众扫码-全链路详情")
+    @GetMapping("/scan/{traceCode}/full")
+    public R<com.apple.chain.trace.dto.TraceFullChainVO> scanFull(@PathVariable String traceCode) {
+        return R.ok(traceAggregationService.getFullChain(traceCode));
     }
 
     @Operation(summary = "生成溯源二维码PNG")

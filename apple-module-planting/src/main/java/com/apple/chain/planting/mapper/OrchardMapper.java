@@ -14,16 +14,16 @@ import java.util.List;
 @Mapper
 public interface OrchardMapper extends BaseMapper<Orchard> {
 
-    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(orchard_no, 12) AS BIGINT)), 0) + 1 " +
-            "FROM pt_orchard WHERE orchard_no LIKE CONCAT('ORD', #{prefix}, '%')")
+    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(orchard_no, 12) AS SIGNED)), 0) + 1 " +
+            "FROM farm_orchard WHERE orchard_no LIKE CONCAT('ORD', #{prefix}, '%')")
     int nextSeq(String prefix);
 
     /**
      * M4 GIS: viewport (bounding-box) query.
      * Returns orchards whose centroid falls inside the rectangle.
-     * Index used: idx_pt_orchard_center (V15).
+     * Index used: idx_farm_orchard_center.
      */
-    @Select("SELECT * FROM pt_orchard " +
+    @Select("SELECT * FROM farm_orchard " +
             "WHERE deleted = 0 " +
             "  AND center_lat IS NOT NULL " +
             "  AND center_lng IS NOT NULL " +

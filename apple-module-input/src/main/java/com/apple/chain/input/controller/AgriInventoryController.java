@@ -10,7 +10,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Agricultural input inventory endpoints.
@@ -57,6 +59,14 @@ public class AgriInventoryController {
     public R<Void> delete(@PathVariable Long id) {
         agriInventoryService.deleteInventory(id);
         return R.ok("删除成功", null);
+    }
+
+    @Operation(summary = "调整库存数量（delta正增负减）")
+    @PostMapping("/{id}/adjust")
+    public R<AgriInventory> adjust(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        BigDecimal delta = new BigDecimal(body.get("delta").toString());
+        String reason = body.containsKey("reason") ? body.get("reason").toString() : null;
+        return R.ok(agriInventoryService.adjustStock(id, delta, reason));
     }
 
     @Operation(summary = "库存预警列表（LOW/EMPTY）")

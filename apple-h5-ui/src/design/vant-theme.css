@@ -1,0 +1,144 @@
+/**
+ * Vant 4 theme overrides for apple-chain-platform H5.
+ * Source of truth: ./tokens.js (do not hardcode colors here).
+ *
+ * Only --van-* variables live here; semantic app tokens live in :root further down
+ * (mirrored from tokens.js so CSS-only consumers can use them too).
+ */
+
+:root {
+  /* ---------- Brand (mirrored from tokens.color.brand) ---------- */
+  --color-brand-primary: #d32f2f;
+  --color-brand-primary-hover: #c62828;
+  --color-brand-primary-active: #b71c1c;
+  --color-brand-primary-light: #ffebee;
+
+  --color-leaf-green: #43a047;
+  --color-leaf-green-light: #e8f5e9;
+
+  /* ---------- Text ---------- */
+  --color-text-primary: #2c2e32;
+  --color-text-secondary: #5e6368;
+  --color-text-tertiary: #8a9099;
+  --color-text-inverse: #ffffff;
+
+  /* ---------- Surface ---------- */
+  --color-surface-base: #fafaf8;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #f5f5f2;
+
+  /* ---------- Border ---------- */
+  --color-border-default: rgba(44, 46, 50, 0.08);
+  --color-border-strong: rgba(44, 46, 50, 0.16);
+
+  /* ---------- Semantic ---------- */
+  --color-success: #43a047;
+  --color-warning: #f57c00;
+  --color-error: #d32f2f;
+  --color-info: #1976d2;
+
+  /* ---------- Cold-chain temperature ---------- */
+  --color-temp-normal: #1976d2;
+  --color-temp-warning: #f57c00;
+  --color-temp-critical: #d32f2f;
+
+  /* ---------- Spacing ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ---------- Radius ---------- */
+  --radius-sm: 4px;
+  --radius-base: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* ---------- Font ---------- */
+  --font-body: "PingFang SC", "Source Han Sans SC", "Microsoft YaHei",
+    -apple-system, Inter, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+
+  /* ---------- Density (spacious default for farmer/driver C-side) ---------- */
+  --density-button-height: 48px;
+  --density-input-height: 48px;
+  --density-cell-height: 56px;
+
+  /* ---------- Elevation ---------- */
+  --elev-1: 0 1px 2px rgba(44, 46, 50, 0.04);
+  --elev-2: 0 4px 12px rgba(44, 46, 50, 0.08);
+}
+
+/* ---------- Vant overrides ---------- */
+:root {
+  --van-primary-color: var(--color-brand-primary);
+  --van-success-color: var(--color-success);
+  --van-warning-color: var(--color-warning);
+  --van-danger-color: var(--color-error);
+
+  --van-text-color: var(--color-text-primary);
+  --van-text-color-2: var(--color-text-secondary);
+  --van-text-color-3: var(--color-text-tertiary);
+
+  --van-background: var(--color-surface-base);
+  --van-background-2: var(--color-surface-raised);
+
+  --van-border-color: var(--color-border-default);
+
+  --van-button-primary-background: var(--color-brand-primary);
+  --van-button-primary-border-color: var(--color-brand-primary);
+  --van-button-border-radius: var(--radius-base);
+
+  --van-cell-font-size: 16px;
+  --van-cell-line-height: 24px;
+
+  --van-nav-bar-background: var(--color-surface-raised);
+  --van-nav-bar-title-text-color: var(--color-text-primary);
+
+  --van-tabbar-item-active-color: var(--color-brand-primary);
+}
+
+/* ---------- Base document ---------- */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 16px; /* CLAUDE.md: 正文 >= 16px */
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  background: var(--color-surface-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+  /* Disable iOS tap highlight */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Motion-reduction accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tabular numbers for data cells */
+.nums-tabular {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}

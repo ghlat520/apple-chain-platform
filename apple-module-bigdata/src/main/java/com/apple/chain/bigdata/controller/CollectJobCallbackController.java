@@ -48,12 +48,12 @@ public class CollectJobCallbackController {
                             @Valid @RequestBody JobRunCallbackDTO body) {
         if (expectedToken == null || !expectedToken.equals(token)) {
             log.warn("DS callback rejected: bad token, jobCode={}", body.getJobCode());
-            return R.fail("invalid callback token");
+            return R.fail(1100907, "invalid callback token");
         }
 
         BdCollectJob job = jobService.getById(body.getJobId());
         if (job == null) {
-            return R.fail("collect job not found: " + body.getJobId());
+            return R.fail(1100908, "collect job not found: " + body.getJobId());
         }
 
         BdCollectJobRun run = new BdCollectJobRun();

@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface OrchardMvpMapper extends BaseMapper<OrchardMvp> {
 
-    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(orchard_code, 11) AS BIGINT)), 0) + 1 " +
+    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(orchard_code, 11) AS SIGNED)), 0) + 1 " +
             "FROM farm_orchard WHERE orchard_code LIKE CONCAT('OC', #{prefix}, '%')")
     int nextSeq(String prefix);
 }

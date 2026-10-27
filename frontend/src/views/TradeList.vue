@@ -36,7 +36,7 @@
               type="primary"
               text="确认"
               style="height:100%;"
-              @click="updateStatus(item.id, 'IN_PROGRESS')"
+              @click="updateStatus(item.id, 'CONFIRMED')"
             />
           </template>
         </van-swipe-cell>
@@ -56,14 +56,29 @@
         </van-form>
       </div>
     </van-action-sheet>
+
+    <!-- 演示链路导航 -->
+    <div style="padding:16px;" v-if="list.length > 0 && !showAddSheet">
+      <van-button
+        block
+        type="primary"
+        color="#07c160"
+        icon="guide-o"
+        @click="router.push('/dashboard')"
+      >
+        下一步：数据总览
+      </van-button>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { tradeApi } from '@/api/trade'
 import { showToast } from 'vant'
 
+const router = useRouter()
 const list = ref([])
 const loading = ref(false)
 const finished = ref(false)
@@ -102,7 +117,15 @@ async function loadList(reset = false) {
 function handleTabChange(val) { query.status = val; loadList(true) }
 
 async function updateStatus(id, status) {
-  await tradeApi.updateStatus(id, status)
+  // 契约状态机: DRAFT→CONFIRMED→DELIVERED→COMPLETED
+  const actionMap = {
+    CONFIRMED: () => tradeApi.confirmOrder(id),
+    IN_PROGRESS: () => tradeApi.confirmOrder(id), // 演示前端兼容映射
+    DELIVERED: () => tradeApi.deliverOrder(id),
+    COMPLETED: () => tradeApi.completeOrder(id),
+    CANCELLED: () => tradeApi.cancelOrder(id)
+  }
+  await (actionMap[status] || (() => Promise.reject(new Error(`未知状态: ${status}`))))()
   showToast('状态已更新')
   loadList(true)
 }

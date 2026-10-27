@@ -294,7 +294,13 @@ async function handleStatusChange(item, newStatus) {
       message: `确认将订单 #${item.id} 状态变更为「${statusLabel(newStatus)}」？`
     })
     transitioning.value = true
-    await tradeApi.updateOrderStatus(item.id, newStatus)
+    const actionMap = {
+      CONFIRMED: () => tradeApi.confirmOrder(item.id),
+      DELIVERED: () => tradeApi.deliverOrder(item.id),
+      COMPLETED: () => tradeApi.completeOrder(item.id),
+      CANCELLED: () => tradeApi.cancelOrder(item.id)
+    }
+    await (actionMap[newStatus] || (() => Promise.reject(new Error(`未知状态: ${newStatus}`))))()
     showToast({ type: 'success', message: `已${statusLabel(newStatus)}` })
     showDetail.value = false
     loadList()

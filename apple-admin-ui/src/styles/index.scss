@@ -1,0 +1,87 @@
+@import './variables.scss';
+
+// Element Plus theme overrides
+:root {
+  --el-color-primary: #{$--color-primary};
+  --el-color-success: #{$--color-success};
+  --el-color-warning: #{$--color-warning};
+  --el-color-danger: #{$--color-danger};
+  --el-color-info: #{$--color-info};
+  --el-bg-color-page: #{$--bg-page};
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: $--bg-page;
+}
+
+#app {
+  height: 100%;
+}
+
+// Page card wrapper
+.page-container {
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: $--text-primary;
+}
+
+// Filter bar
+.filter-bar {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+// Table action buttons
+.table-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+// Status tags
+.status-tag {
+  min-width: 60px;
+  text-align: center;
+}
+
+// Number fields - tabular alignment
+.nums-tabular {
+  font-variant-numeric: tabular-nums;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+}
+
+// Scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C0C4CC;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

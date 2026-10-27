@@ -21,4 +21,10 @@ public interface AgriPurchaseService extends IService<AgriPurchase> {
     void deletePurchase(Long id);
 
     void exportPurchases(String keyword, String status, Long farmerId, HttpServletResponse response);
+
+    AgriPurchase approvePurchase(Long id);
+
+    AgriPurchase receivePurchase(Long id);
+
+    AgriPurchase cancelPurchase(Long id);
 }

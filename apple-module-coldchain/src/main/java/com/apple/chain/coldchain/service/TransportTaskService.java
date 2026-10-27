@@ -21,5 +21,7 @@ public interface TransportTaskService extends IService<TransportTask> {
 
     TransportTask deliver(Long id);
 
+    TransportTask cancelTask(Long id);
+
     void exportTasks(String keyword, String status, HttpServletResponse response);
 }

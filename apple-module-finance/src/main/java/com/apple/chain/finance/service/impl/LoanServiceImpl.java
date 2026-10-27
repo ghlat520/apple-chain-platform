@@ -121,6 +121,79 @@ public class LoanServiceImpl extends ServiceImpl<LoanMapper, Loan> implements Lo
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Loan applyPlantLoan(Loan loan) {
+        loan.setLoanType("PLANT");
+        loan.setStatus("PENDING");
+        return createLoan(loan);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Loan applyWarehouseLoan(Loan loan) {
+        loan.setLoanType("WAREHOUSE");
+        loan.setStatus("PENDING");
+        return createLoan(loan);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Loan applyTradeLoan(Loan loan) {
+        loan.setLoanType("TRADE");
+        loan.setStatus("PENDING");
+        return createLoan(loan);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Loan applyExportLoan(Loan loan) {
+        loan.setLoanType("EXPORT");
+        loan.setStatus("PENDING");
+        return createLoan(loan);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Loan repay(Long id, java.math.BigDecimal amount) {
+        Loan loan = getLoanDetail(id);
+        java.math.BigDecimal repaid = loan.getRepaidAmount() == null
+                ? java.math.BigDecimal.ZERO : loan.getRepaidAmount();
+        java.math.BigDecimal newRepaid = repaid.add(amount);
+        Loan update = new Loan();
+        update.setId(id);
+        update.setRepaidAmount(newRepaid);
+        if (newRepaid.compareTo(loan.getAmount()) >= 0) {
+            update.setStatus("REPAID");
+        }
+        updateById(update);
+        return getById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Loan settle(Long id) {
+        Loan loan = getLoanDetail(id);
+        if (!"REPAID".equals(loan.getStatus())) throw new BizException("只有已还清的贷款可以结清");
+        Loan update = new Loan();
+        update.setId(id);
+        update.setStatus("SETTLED");
+        updateById(update);
+        return getById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Loan markOverdue(Long id) {
+        Loan loan = getLoanDetail(id);
+        if (!"DISBURSED".equals(loan.getStatus())) throw new BizException("只有已放款的贷款可以标记为逾期");
+        Loan update = new Loan();
+        update.setId(id);
+        update.setStatus("OVERDUE");
+        updateById(update);
+        return getById(id);
+    }
+
+    @Override
     public void exportLoans(String keyword, String loanType, String status, HttpServletResponse response) {
         List<Loan> list = list(new LambdaQueryWrapper<Loan>()
                 .and(StringUtils.hasText(keyword), w -> w.like(Loan::getLoanCode, keyword).or().like(Loan::getBorrowerName, keyword))

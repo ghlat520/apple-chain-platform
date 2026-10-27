@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface HarvestBatchMapper extends BaseMapper<HarvestBatch> {
 
-    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(batch_no, 11) AS BIGINT)), 0) + 1 " +
+    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(batch_no, 11) AS SIGNED)), 0) + 1 " +
             "FROM pt_harvest_batch WHERE batch_no LIKE CONCAT('HB', #{prefix}, '%')")
     int nextSeq(String prefix);
 }

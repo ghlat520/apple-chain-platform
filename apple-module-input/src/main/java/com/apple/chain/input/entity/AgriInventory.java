@@ -34,10 +34,13 @@ public class AgriInventory extends BaseEntity {
     /** 预警阈值 */
     private BigDecimal warningLevel;
 
+    /** 超储上限 */
+    private BigDecimal maxLevel;
+
     /** 存放位置 */
     private String warehouse;
 
-    /** NORMAL/LOW/EMPTY */
+    /** NORMAL/LOW/EMPTY/OVERSTOCKED */
     private String status;
 
     private String remark;

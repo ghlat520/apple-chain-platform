@@ -18,7 +18,9 @@ import org.springframework.util.StringUtils;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -63,6 +65,36 @@ public class CreditRatingServiceImpl extends ServiceImpl<CreditRatingMapper, Cre
     public void deleteRating(Long id) {
         getRatingDetail(id);
         removeById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CreditRating calculateScore(Long entityId, String entityType) {
+        Random random = new Random();
+        int tradeScore = 60 + random.nextInt(36);        // [60, 95]
+        int productionScore = 50 + random.nextInt(41);   // [50, 90]
+        int financialScore = 55 + random.nextInt(31);    // [55, 85]
+        double creditScoreDouble = tradeScore * 0.4 + productionScore * 0.3 + financialScore * 0.3;
+        int creditScore = (int) Math.round(creditScoreDouble);
+        String creditLevel;
+        if (creditScore >= 85) creditLevel = "A";
+        else if (creditScore >= 70) creditLevel = "B";
+        else if (creditScore >= 55) creditLevel = "C";
+        else creditLevel = "D";
+
+        CreditRating rating = new CreditRating();
+        rating.setEntityId(entityId);
+        rating.setEntityType(entityType);
+        rating.setTradeScore(tradeScore);
+        rating.setProductionScore(productionScore);
+        rating.setFinancialScore(financialScore);
+        rating.setCreditScore(creditScore);
+        rating.setCreditLevel(creditLevel);
+        rating.setAssessmentDate(LocalDate.now());
+        rating.setValidUntil(LocalDate.now().plusYears(1));
+        rating.setStatus("ACTIVE");
+        save(rating);
+        return rating;
     }
 
     @Override

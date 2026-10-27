@@ -63,7 +63,7 @@
         FROM pt_harvest_batch
         WHERE deleted = 0
           AND status IN ('CONFIRMED', 'IN_STORAGE')
-          AND harvest_date >= DATEADD('MONTH', -5, CURRENT_DATE)
+          AND harvest_date >= DATE_SUB(CURDATE(), INTERVAL 5 MONTH)
         GROUP BY CONCAT(YEAR(harvest_date), '-', LPAD(MONTH(harvest_date), 2, '0'))
         ORDER BY ym ASC
     </select>
@@ -79,7 +79,7 @@
         FROM td_trade_order
         WHERE deleted = 0
           AND order_status = 'COMPLETED'
-          AND trade_date >= DATEADD('MONTH', -5, CURRENT_DATE)
+          AND trade_date >= DATE_SUB(CURDATE(), INTERVAL 5 MONTH)
         GROUP BY CONCAT(YEAR(trade_date), '-', LPAD(MONTH(trade_date), 2, '0'))
         ORDER BY ym ASC
     </select>

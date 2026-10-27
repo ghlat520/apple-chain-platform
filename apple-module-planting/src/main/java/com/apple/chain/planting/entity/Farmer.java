@@ -18,6 +18,9 @@ import java.math.BigDecimal;
 @TableName("farm_farmer")
 public class Farmer extends BaseEntity {
 
+    /** Associated platform user ID (links User ↔ Farmer) */
+    private Long userId;
+
     /** Auto-generated farmer code: FC + yyyyMMdd + 4-digit seq */
     private String farmerCode;
 

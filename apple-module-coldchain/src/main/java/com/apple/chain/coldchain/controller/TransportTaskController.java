@@ -58,6 +58,12 @@ public class TransportTaskController {
         return R.ok(transportTaskService.deliver(id));
     }
 
+    @Operation(summary = "取消任务")
+    @PostMapping("/{id}/cancel")
+    public R<TransportTask> cancel(@PathVariable Long id) {
+        return R.ok(transportTaskService.cancelTask(id));
+    }
+
     @Operation(summary = "删除运输任务")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {

@@ -37,4 +37,19 @@ export const financeApi = {
   updateRisk: (id, data) => request.put(`/finance/risks/${id}`, data),
   deleteRisk: (id) => request.delete(`/finance/risks/${id}`),
   exportRisks: () => downloadFile('/api/finance/risks/export', '风控记录.csv'),
+
+  // Statistics
+  getStatisticsSummary: () => request.get('/finance/statistics/summary'),
+  getStatisticsTrend: (params) => request.get('/finance/statistics/trend', { params }),
+  getFinanceRisk: () => request.get('/finance/statistics/risk'),
+
+  // Contract-lint 补齐
+  processLoanWorkflow: (id, data) => request.post(`/finance/loans/${id}/process-workflow`, data),
+
+  // 逾期 / 分类贷款申请 / 导出
+  markLoanOverdue: (id) => request.post(`/finance/loans/${id}/overdue`),
+  applyPlantLoan: (data) => request.post('/finance/loans/apply/plant', data),
+  applyWarehouseLoan: (data) => request.post('/finance/loans/apply/warehouse', data),
+  applyTradeLoan: (data) => request.post('/finance/loans/apply/trade', data),
+  exportLoanApply: (data) => request.post('/finance/loans/apply/export', data),
 }

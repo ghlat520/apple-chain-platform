@@ -22,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +83,50 @@ public class WarehouseServiceImpl extends ServiceImpl<WarehouseMapper, Warehouse
             throw new BizException("仓库尚有库存，不能删除");
         }
         removeById(id);
+    }
+
+    private static final Map<String, Set<String>> STATUS_TRANSITIONS = Map.of(
+            "ACTIVE", Set.of("MAINTENANCE", "CLOSED", "FULL"),
+            "MAINTENANCE", Set.of("ACTIVE"),
+            "FULL", Set.of("ACTIVE")
+    );
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Warehouse changeStatus(Long id, String newStatus) {
+        Warehouse warehouse = getWarehouseDetail(id);
+        String current = warehouse.getStatus();
+        if ("CLOSED".equals(current)) {
+            throw new BizException("已关闭的仓库不能变更状态");
+        }
+        Set<String> allowed = STATUS_TRANSITIONS.getOrDefault(current, Set.of());
+        if (!allowed.contains(newStatus)) {
+            throw new BizException("不允许的状态变更: " + current + " → " + newStatus);
+        }
+        if ("CLOSED".equals(newStatus) && warehouse.getUsedCapacity() != null
+                && warehouse.getUsedCapacity().compareTo(BigDecimal.ZERO) > 0) {
+            throw new BizException("仓库尚有库存，不能关闭");
+        }
+        Warehouse update = new Warehouse();
+        update.setId(id);
+        update.setStatus(newStatus);
+        updateById(update);
+        return getById(id);
+    }
+
+    @Override
+    public List<Warehouse> listAlerts() {
+        List<Warehouse> all = list(new LambdaQueryWrapper<Warehouse>()
+                .ne(Warehouse::getStatus, "CLOSED"));
+        return all.stream().filter(w -> {
+            BigDecimal used = w.getUsedCapacity() != null ? w.getUsedCapacity() : BigDecimal.ZERO;
+            BigDecimal cap = w.getCapacity() != null ? w.getCapacity() : BigDecimal.ONE;
+            boolean nearFull = cap.compareTo(BigDecimal.ZERO) > 0
+                    && used.divide(cap, 2, java.math.RoundingMode.HALF_UP).compareTo(new BigDecimal("0.90")) >= 0;
+            boolean emptyActive = "ACTIVE".equals(w.getStatus()) && used.compareTo(BigDecimal.ZERO) == 0;
+            boolean maintenance = "MAINTENANCE".equals(w.getStatus());
+            return nearFull || emptyActive || maintenance;
+        }).toList();
     }
 
     @Override

@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface FarmerMapper extends BaseMapper<Farmer> {
 
-    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(farmer_code, 11) AS BIGINT)), 0) + 1 " +
+    @Select("SELECT COALESCE(MAX(CAST(SUBSTRING(farmer_code, 11) AS SIGNED)), 0) + 1 " +
             "FROM farm_farmer WHERE farmer_code LIKE CONCAT('FC', #{prefix}, '%')")
     int nextSeq(String prefix);
 }

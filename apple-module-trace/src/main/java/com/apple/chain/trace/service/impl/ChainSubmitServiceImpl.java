@@ -177,11 +177,13 @@ public class ChainSubmitServiceImpl implements ChainSubmitService {
 
         result.put("valid", hashMatch && record.getChainStatus() == ChainRecord.STATUS_SUCCESS);
         result.put("hashMatch", hashMatch);
+        result.put("businessType", record.getBusinessType());
         result.put("chainStatus", record.getChainStatus());
         result.put("chainTxHash", record.getChainTxHash());
         result.put("chainBlockHeight", record.getChainBlockHeight());
         result.put("dataHash", record.getDataHash());
         result.put("currentHash", currentHash);
+        result.put("createTime", record.getCreateTime());
         return result;
     }
 

@@ -1,5 +1,6 @@
 package com.apple.chain.planting.controller;
 
+import com.apple.chain.common.context.UserContext;
 import com.apple.chain.common.result.PageResult;
 import com.apple.chain.common.result.R;
 import com.apple.chain.planting.entity.Orchard;
@@ -9,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Orchard management endpoints.
@@ -65,5 +68,11 @@ public class OrchardController {
             @RequestParam(required = false) Long farmerId,
             HttpServletResponse response) {
         orchardService.exportOrchards(keyword, status, farmerId, response);
+    }
+
+    @Operation(summary = "我的果园（当前登录用户的果园列表）")
+    @GetMapping("/my")
+    public R<List<Orchard>> myOrchards() {
+        return R.ok(orchardService.listMyOrchards(UserContext.getUserId()));
     }
 }

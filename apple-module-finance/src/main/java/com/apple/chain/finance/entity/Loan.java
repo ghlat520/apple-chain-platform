@@ -31,4 +31,6 @@ public class Loan extends BaseEntity {
     private String status;
     private Long pledgeId;
     private String remark;
+    /** JSON string for loan-type specific data (plant/warehouse/trade/export) */
+    private String productSpecificData;
 }

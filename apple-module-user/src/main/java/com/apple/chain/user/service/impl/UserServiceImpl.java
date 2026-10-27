@@ -5,10 +5,12 @@ import com.apple.chain.common.result.ResultCode;
 import com.apple.chain.common.util.JwtUtil;
 import com.apple.chain.user.dto.LoginRequest;
 import com.apple.chain.user.dto.LoginResponse;
+import com.apple.chain.user.dto.SmsLoginRequest;
 import com.apple.chain.user.entity.SysRole;
 import com.apple.chain.user.entity.User;
 import com.apple.chain.user.mapper.UserMapper;
 import com.apple.chain.user.service.RbacService;
+import com.apple.chain.user.service.SmsSenderService;
 import com.apple.chain.user.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,6 +19,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +41,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final RbacService rbacService;
+    private final SmsSenderService smsSenderService;
+    private final StringRedisTemplate redisTemplate;
+
+    @Value("${apple.sms.mock:true}")
+    private boolean smsMock;
+
+    private static final String SMS_CODE_PREFIX = "sms:code:";
+    private static final long SMS_CODE_TTL_MINUTES = 5;
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -79,6 +91,66 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public void sendSmsCode(String phone) {
+        // Mock mode: fixed code 123456 for dev/demo
+        String code = smsMock ? "123456" : String.valueOf((int) ((Math.random() * 9 + 1) * 100000));
+        redisTemplate.opsForValue().set(SMS_CODE_PREFIX + phone, code, java.time.Duration.ofMinutes(SMS_CODE_TTL_MINUTES));
+        smsSenderService.sendCode(phone, code);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public LoginResponse smsLogin(SmsLoginRequest request) {
+        String cachedCode = redisTemplate.opsForValue().get(SMS_CODE_PREFIX + request.getPhone());
+        if (cachedCode == null) {
+            throw new BizException("验证码已过期，请重新获取");
+        }
+        // In mock mode, code is always "123456"; in production, random 6-digit
+        if (!cachedCode.equals(request.getCode())) {
+            throw new BizException("验证码错误");
+        }
+        redisTemplate.delete(SMS_CODE_PREFIX + request.getPhone());
+
+        // Find or auto-register user by phone
+        User user = baseMapper.selectOne(
+                new LambdaQueryWrapper<User>().eq(User::getPhone, request.getPhone()));
+        if (user == null) {
+            user = new User();
+            user.setUsername(request.getPhone());
+            user.setPhone(request.getPhone());
+            user.setRealName("用户" + request.getPhone().substring(7));
+            user.setPassword(passwordEncoder.encode(request.getPhone()));
+            user.setRoleCode("FARMER");
+            user.setStatus(1);
+            save(user);
+            log.info("Auto-registered user {} via SMS login", user.getId());
+        }
+        if (user.getStatus() == null || user.getStatus() == 0) {
+            throw new BizException("账号已被禁用，请联系管理员");
+        }
+
+        List<SysRole> roles = rbacService.getRolesForUser(user.getId());
+        List<String> roleCodes = roles.isEmpty() && user.getRoleCode() != null
+                ? Collections.singletonList(user.getRoleCode())
+                : roles.stream().map(SysRole::getRoleCode).collect(Collectors.toList());
+        List<String> permissions = rbacService.getPermissionCodesForUser(user.getId());
+
+        String primaryRole = roleCodes.isEmpty() ? user.getRoleCode() : roleCodes.get(0);
+        String token = jwtUtil.generateToken(
+                user.getId(), user.getUsername(), primaryRole, roleCodes, permissions);
+
+        return LoginResponse.builder()
+                .token(token)
+                .userId(user.getId())
+                .username(user.getUsername())
+                .realName(user.getRealName())
+                .roleCode(primaryRole)
+                .orgName(user.getOrgName())
+                .avatar(user.getAvatar())
+                .roles(roleCodes)
+                .permissions(permissions)
+                .build();
+    }
     public User getProfile(Long userId) {
         User user = getById(userId);
         if (user == null) {

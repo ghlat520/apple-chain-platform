@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -96,6 +97,11 @@ public class WarehouseReceiptServiceImpl extends ServiceImpl<WarehouseReceiptMap
         return getById(id);
     }
 
+    private static final Map<String, Set<String>> RECEIPT_TRANSITIONS = Map.of(
+            "VALID", Set.of("PLEDGED", "TRANSFERRED", "CANCELLED"),
+            "PLEDGED", Set.of("CANCELLED")
+    );
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public WarehouseReceipt changeStatus(Long id, String status) {
@@ -103,19 +109,18 @@ public class WarehouseReceiptServiceImpl extends ServiceImpl<WarehouseReceiptMap
             throw new BizException("无效的仓单状态: " + status);
         }
         WarehouseReceipt existing = getReceiptDetail(id);
-
-        // State transition validation
         String currentStatus = existing.getStatus();
-        if ("CANCELLED".equals(currentStatus)) {
-            throw new BizException("已注销的仓单不能变更状态");
-        }
-        if ("TRANSFERRED".equals(currentStatus)) {
-            throw new BizException("已转让的仓单不能变更状态");
+
+        Set<String> allowed = RECEIPT_TRANSITIONS.getOrDefault(currentStatus, Set.of());
+        if (!allowed.contains(status)) {
+            throw new BizException("不允许的状态变更: " + currentStatus + " → " + status);
         }
 
         WarehouseReceipt update = new WarehouseReceipt();
         update.setId(id);
         update.setStatus(status);
+        update.setStatusChangeTime(java.time.LocalDateTime.now());
+        update.setStatusChangeBy("SYSTEM");
         updateById(update);
         return getById(id);
     }

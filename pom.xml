@@ -32,6 +32,7 @@
         <module>apple-module-iot</module>
         <module>apple-module-finance</module>
         <module>apple-module-finance-gateway</module>
+        <module>apple-module-file</module>
         <module>apple-web</module>
     </modules>
 
@@ -120,6 +121,11 @@
             <dependency>
                 <groupId>com.apple.chain</groupId>
                 <artifactId>apple-module-finance-gateway</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apple.chain</groupId>
+                <artifactId>apple-module-file</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

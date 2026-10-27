@@ -64,4 +64,13 @@ public class WarehouseReceipt extends BaseEntity {
 
     /** 备注 */
     private String remark;
+
+    /** 状态变更操作人 */
+    private String statusChangeBy;
+
+    /** 状态变更时间 */
+    private java.time.LocalDateTime statusChangeTime;
+
+    /** 状态变更原因 */
+    private String statusChangeReason;
 }

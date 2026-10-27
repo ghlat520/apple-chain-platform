@@ -18,6 +18,7 @@ public class Delivery extends BaseEntity {
     private String receiverPhone;
     private String receiverAddr;
     private LocalDateTime deliveryTime;
+    /** Sign time — auto-filled by backend on sign(). Front-end must NOT send this field. */
     private LocalDateTime signTime;
     private String signPhoto;
     /** PENDING/PASSED/REJECTED */

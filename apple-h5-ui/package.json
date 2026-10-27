@@ -1,0 +1,30 @@
+{
+  "name": "apple-h5-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mobile H5 for apple-chain-platform. Vue 3 + Vant + shared-core. Paired with future apple-miniapp via apple-shared-core.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@apple/shared-core": "file:../apple-shared-core",
+    "@vant/use": "^1.6.0",
+    "axios": "^1.7.7",
+    "lib-flexible": "^0.3.2",
+    "pinia": "^2.2.4",
+    "vant": "^4.9.3",
+    "vue": "^3.5.12",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "postcss": "^8.4.47",
+    "postcss-px-to-viewport-8-plugin": "^1.2.5",
+    "typescript": "^5.4.5",
+    "vite": "^5.4.10",
+    "vue-tsc": "^2.1.10"
+  }
+}

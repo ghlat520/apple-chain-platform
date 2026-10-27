@@ -16,6 +16,12 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/styleguide',
+    name: 'Styleguide',
+    component: () => import('@/views/Styleguide.vue'),
+    meta: { requiresAuth: false }  // 视觉 QA 页面，无需登录
+  },
+  {
     path: '/',
     component: () => import('@/components/AppLayout.vue'),
     meta: { requiresAuth: true },
@@ -58,6 +64,24 @@ const routes = [
         component: () => import('@/views/planting/HarvestRecommend.vue')
       },
       {
+        // Harvest batch management
+        path: 'planting/harvest-batch',
+        name: 'HarvestBatch',
+        component: () => import('@/views/planting/HarvestBatch.vue')
+      },
+      {
+        // AI 作业计划
+        path: 'planting/task-plan',
+        name: 'TaskPlan',
+        component: () => import('@/views/planting/TaskPlan.vue')
+      },
+      {
+        // 种植分析
+        path: 'planting/analysis',
+        name: 'PlantingAnalysis',
+        component: () => import('@/views/planting/Analysis.vue')
+      },
+      {
         path: 'trace/records',
         name: 'TraceRecords',
         component: () => import('@/views/trace/Records.vue')
@@ -71,6 +95,23 @@ const routes = [
         path: 'trace/code-generate',
         name: 'TraceCodeGenerate',
         component: () => import('@/views/trace/CodeGenerate.vue')
+      },
+      {
+        path: 'trace/anomaly',
+        name: 'AnomalyTrace',
+        component: () => import('@/views/trace/Anomaly.vue')
+      },
+      {
+        path: 'trace/blockchain',
+        name: 'Blockchain',
+        component: () => import('@/views/trace/Blockchain.vue')
+      },
+      {
+        // 采收批次管理 (P0)
+        path: 'trace/harvest-batch',
+        name: 'TraceHarvestBatch',
+        component: () => import('@/views/trace/HarvestBatch.vue'),
+        meta: { perm: 'harvest:read' }
       },
       {
         path: 'farm/farmers',
@@ -91,6 +132,21 @@ const routes = [
         path: 'trade/purchase-needs',
         name: 'PurchaseNeeds',
         component: () => import('@/views/trade/PurchaseNeeds.vue')
+      },
+      {
+        path: 'trade/inspection',
+        name: 'Inspection',
+        component: () => import('@/views/trade/Inspection.vue')
+      },
+      {
+        path: 'trade/stats',
+        name: 'TradeStats',
+        component: () => import('@/views/trade/TradeStats.vue')
+      },
+      {
+        path: 'trade/matching',
+        name: 'Matching',
+        component: () => import('@/views/trade/Matching.vue')
       },
       // Input module
       {
@@ -182,7 +238,43 @@ const routes = [
         name: 'AdminRoles',
         component: () => import('@/views/admin/Roles.vue'),
         meta: { perm: 'role:read' }
-      }
+      },
+      {
+        path: 'admin/users',
+        name: 'AdminUsers',
+        component: () => import('@/views/admin/Users.vue'),
+        meta: { perm: 'user:read' }
+      },
+      // === 新增页面路由（P2 合并） ===
+      // 模块入口
+      { path: 'modules', name: 'ModuleGrid', component: () => import('@/views/ModuleGrid.vue'), meta: { requiresAuth: true } },
+      // 果园详情
+      { path: 'farm/orchard/:id', name: 'OrchardDetail', component: () => import('@/views/farm/OrchardDetail.vue'), meta: { requiresAuth: true } },
+      // 果园地图
+      { path: 'farm/orchard-map', name: 'OrchardMap', component: () => import('@/views/farm/OrchardMap.vue'), meta: { requiresAuth: true } },
+      // 溯源详情
+      { path: 'trace/detail/:batchCode', name: 'TraceDetail', component: () => import('@/views/trace/Detail.vue'), meta: { requiresAuth: true } },
+      // 农资溯源链
+      { path: 'input/trace-chain/:code', name: 'TraceChain', component: () => import('@/views/input/TraceChain.vue'), meta: { requiresAuth: true } },
+      // 预冷管理
+      { path: 'coldchain/precooling', name: 'Precooling', component: () => import('@/views/coldchain/Precooling.vue'), meta: { requiresAuth: true } },
+      // 冷链统计
+      { path: 'coldchain/statistics', name: 'ColdchainStats', component: () => import('@/views/coldchain/Statistics.vue'), meta: { requiresAuth: true } },
+      // 仓储统计
+      { path: 'warehouse/statistics', name: 'WarehouseStats', component: () => import('@/views/warehouse/Statistics.vue'), meta: { requiresAuth: true } },
+      // 金融统计
+      { path: 'finance/statistics', name: 'FinanceStats', component: () => import('@/views/finance/Statistics.vue'), meta: { requiresAuth: true } },
+      // === M8 大数据管理 (bigdata) ===
+      { path: 'bigdata/data-asset', name: 'BigDataAsset', component: () => import('@/views/bigdata/DataAsset.vue'), meta: { perm: 'bigdata:read' } },
+      { path: 'bigdata/data-source', name: 'BigDataSource', component: () => import('@/views/bigdata/DataSource.vue'), meta: { perm: 'bigdata:read' } },
+      { path: 'bigdata/data-quality', name: 'BigDataQuality', component: () => import('@/views/bigdata/DataQuality.vue'), meta: { perm: 'bigdata:read' } },
+      { path: 'bigdata/collect-job', name: 'BigCollectJob', component: () => import('@/views/bigdata/CollectJob.vue'), meta: { perm: 'bigdata:read' } },
+      { path: 'bigdata/lineage', name: 'BigLineage', component: () => import('@/views/bigdata/Lineage.vue'), meta: { perm: 'bigdata:read' } },
+      { path: 'bigdata/metric-center', name: 'BigMetricCenter', component: () => import('@/views/bigdata/MetricCenter.vue'), meta: { perm: 'bigdata:read' } },
+      { path: 'bigdata/report', name: 'BigReport', component: () => import('@/views/bigdata/Report.vue'), meta: { perm: 'bigdata:read' } },
+      { path: 'bigdata/audit-log', name: 'BigAuditLog', component: () => import('@/views/bigdata/AuditLog.vue'), meta: { perm: 'bigdata:read' } },
+      { path: 'bigdata/open-api', name: 'BigOpenApi', component: () => import('@/views/bigdata/OpenApi.vue'), meta: { perm: 'bigdata:read' } },
+      { path: 'bigdata/screen-config', name: 'BigScreenConfig', component: () => import('@/views/bigdata/ScreenConfig.vue'), meta: { perm: 'bigdata:read' } }
     ]
   }
 ]

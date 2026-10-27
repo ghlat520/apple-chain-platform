@@ -26,16 +26,16 @@ CREATE TABLE IF NOT EXISTS `pt_growth_record` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Growth record table';
 
 -- ===== td_purchase_need: add missing columns =====
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `need_no`       VARCHAR(32)   AFTER `id`;
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `buyer_id`      BIGINT        AFTER `need_no`;
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `price_max`     DECIMAL(10,2) AFTER `quantity`;
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `require_date`  DATE          AFTER `price_max`;
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `quality`       VARCHAR(8)    AFTER `require_date`;
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `delivery_addr` VARCHAR(256)  AFTER `quality`;
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `description`   VARCHAR(512)  AFTER `delivery_addr`;
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `create_time`   DATETIME DEFAULT CURRENT_TIMESTAMP AFTER `status`;
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `update_time`   DATETIME DEFAULT CURRENT_TIMESTAMP AFTER `create_time`;
-ALTER TABLE `td_purchase_need` ADD COLUMN IF NOT EXISTS `create_by`     VARCHAR(64) AFTER `update_time`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `need_no`       VARCHAR(32)   AFTER `id`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `buyer_id`      BIGINT        AFTER `need_no`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `price_max`     DECIMAL(10,2) AFTER `quantity`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `require_date`  DATE          AFTER `price_max`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `quality`       VARCHAR(8)    AFTER `require_date`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `delivery_addr` VARCHAR(256)  AFTER `quality`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `description`   VARCHAR(512)  AFTER `delivery_addr`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `create_time`   DATETIME DEFAULT CURRENT_TIMESTAMP AFTER `status`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `update_time`   DATETIME DEFAULT CURRENT_TIMESTAMP AFTER `create_time`;
+ALTER TABLE `td_purchase_need` ADD COLUMN `create_by`     VARCHAR(64) AFTER `update_time`;
 
 -- =============================================================================
 -- Seed Data - pt_growth_record (8 records, all 5 types covered)

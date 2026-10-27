@@ -1,0 +1,49 @@
+/**
+ * apple-admin-ui 全局基础样式
+ *
+ * 职责：字体栈、数字等宽对齐、焦点环、prefers-reduced-motion。
+ *      不覆盖 Element Plus 组件细节（那是 element-theme.css 的事）。
+ *      不覆盖布局（那是 styles/index.scss 的事）。
+ *
+ * 导入顺序：element-plus → element-theme.css → global.css → styles/index.scss
+ */
+
+/* —— 字体栈 + 正文基线 —— */
+html, body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* —— 数字等宽 (价格 / 重量 / 温度 / GPS / 溯源码) —— */
+.nums-tabular,
+.number,
+.price,
+.amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* —— 焦点环 —— 强制可见，禁止 outline:none —— */
+*:focus-visible {
+  outline: var(--outline-width, 2px) solid var(--color-brand-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* —— 遵守 prefers-reduced-motion —— */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
+  }
+}

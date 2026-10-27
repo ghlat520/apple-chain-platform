@@ -18,4 +18,6 @@ public interface VehicleService extends IService<Vehicle> {
     void deleteVehicle(Long id);
 
     void exportVehicles(String keyword, String vehicleType, String status, HttpServletResponse response);
+
+    Vehicle changeStatus(Long id, String newStatus);
 }

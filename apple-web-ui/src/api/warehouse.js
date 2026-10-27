@@ -24,4 +24,12 @@ export const warehouseApi = {
   updateReceiptStatus: (id, status) => request.put(`/warehouse/receipts/${id}/status`, null, { params: { status } }),
   deleteReceipt: (id) => request.delete(`/warehouse/receipts/${id}`),
   exportReceipts: () => downloadFile('/api/warehouse/receipts/export', '仓单列表.csv'),
+
+  // Alerts
+  getWarehouseAlerts: (params) => request.get('/warehouse/warehouses/alerts', { params }),
+
+  // Statistics
+  getStatisticsSummary: () => request.get('/warehouse/statistics/summary'),
+  getTurnoverStats: (params) => request.get('/warehouse/statistics/turnover', { params }),
+  getLossStats: (params) => request.get('/warehouse/statistics/loss', { params }),
 }
