@@ -29,3 +29,6 @@ logs/
 # Local secrets (do NOT commit)
 apple-web/src/main/resources/application-local.yml
 **/application-local.yml
+
+# Dual-build variants (dist-lite etc.)
+**/dist-*/
